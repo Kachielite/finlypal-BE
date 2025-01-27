@@ -46,17 +46,14 @@ FinlyPal is an AI-powered expense tracking app that helps users manage their fin
 ### Installation
 
 #### Backend Setup:
-1. Navigate to the backend folder:
-   ```bash
-   cd backend
-   
-2. 	Update the application.properties file with your database credentials:
+ 
+1. Update the application.properties file with your database credentials:
 
     ```bash
     spring.datasource.url=jdbc:mysql://localhost:3306/spendwise_db
     spring.datasource.username=root
     spring.datasource.password=yourpassword
 
-3. Run the Spring Boot application:
+2. Run the Spring Boot application:
    ```bash
    ./mvnw spring-boot:run
