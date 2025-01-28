@@ -1,6 +1,7 @@
 package com.derrick.finlypal.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,8 +22,12 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @NotNull(message = "Name is required")
     private String name;
+    @Column(unique = true)
+    @NotNull(message = "Email is required")
     private String email;
+    @NotNull(message = "Password is required")
     private String password;
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private List<Expense> expenses;
