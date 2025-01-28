@@ -2,10 +2,13 @@ package com.derrick.finlypal.entity;
 
 import com.derrick.finlypal.enums.Category;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Getter
@@ -16,18 +19,22 @@ public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    @NotNull(message = "Description is required")
     private String description;
-
-    private BigDecimal amount;
-
+    private BigDecimal amount = BigDecimal.ZERO;
+    @NotNull(message = "Date is required")
     private LocalDate date;
-
     @Enumerated(EnumType.STRING)
     private Category category;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "created_at")
+    private Timestamp createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
 
 }

@@ -1,28 +1,44 @@
 package com.derrick.finlypal.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @NotNull(message = "Name is required")
     private String name;
+    @Column(unique = true)
+    @NotNull(message = "Email is required")
     private String email;
+    @NotNull(message = "Password is required")
     private String password;
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private List<Expense> expenses;
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private Timestamp createdAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
