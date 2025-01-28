@@ -2,19 +2,18 @@ package com.derrick.finlypal.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.Map;
 
 @Data
 @Builder
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthenticationResponseDTO implements ApiResponseDTO {
-    @JsonProperty("access_token")
-    private String accessToken;
-    @JsonProperty("refresh_token")
-    private String refreshToken;
+public class ErrorResponseDTO implements ApiResponseDTO {
+    private String message;
+    private Map<String, String> errors;
 }

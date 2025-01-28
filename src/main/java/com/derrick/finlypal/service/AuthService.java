@@ -6,10 +6,11 @@ import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.exception.UserAlreadyExistsException;
+import org.springframework.security.authentication.BadCredentialsException;
 
-public interface UsersService {
+public interface AuthService {
     AuthenticationResponseDTO login(AuthenticationRequestDTO authenticationRequestDTO)
-            throws InternalServerErrorException, NotFoundException;
+            throws InternalServerErrorException, NotFoundException, BadCredentialsException;
 
     AuthenticationResponseDTO register(UsersRegistrationRequestDTO usersRegistrationRequestDTO)
             throws UserAlreadyExistsException, InternalServerErrorException;

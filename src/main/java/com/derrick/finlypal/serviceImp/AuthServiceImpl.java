@@ -8,11 +8,12 @@ import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.exception.UserAlreadyExistsException;
 import com.derrick.finlypal.repository.UserRepository;
-import com.derrick.finlypal.service.UsersService;
+import com.derrick.finlypal.service.AuthService;
 import com.derrick.finlypal.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UsersServiceImpl implements UsersService {
+public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -29,7 +30,7 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public AuthenticationResponseDTO login(AuthenticationRequestDTO authenticationRequestDTO)
-            throws InternalServerErrorException, NotFoundException {
+            throws InternalServerErrorException, NotFoundException, BadCredentialsException {
         try {
             log.info("Received login request for user with email {}", authenticationRequestDTO.email());
 
@@ -50,6 +51,10 @@ public class UsersServiceImpl implements UsersService {
         } catch (NotFoundException e) {
             log.error("Could not find user with email {}", authenticationRequestDTO.email());
             throw new NotFoundException("User with email " + authenticationRequestDTO.email() + " not found");
+        } catch (BadCredentialsException e) {
+            log.error("Invalid credentials for user with email {}", authenticationRequestDTO.email());
+            throw new BadCredentialsException("Invalid email or password");
+
         } catch (Exception e) {
             log.error("Error authenticating user with email {}", authenticationRequestDTO.email());
             throw new InternalServerErrorException("An unknown error occurred. User could not be authenticated.");
