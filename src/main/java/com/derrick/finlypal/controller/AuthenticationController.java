@@ -8,7 +8,7 @@ import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.exception.UserAlreadyExistsException;
 import com.derrick.finlypal.service.AuthService;
-import com.derrick.finlypal.serviceImp.InputValidation;
+import com.derrick.finlypal.util.InputValidation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
