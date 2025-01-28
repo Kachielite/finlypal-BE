@@ -3,7 +3,7 @@ package com.derrick.finlypal.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record UsersAuthRequestDTO(
+public record AuthenticationRequestDTO(
         @NotBlank(message = "Email cannot be empty")
         String email,
         @NotBlank(message = "Password can not be blank")
