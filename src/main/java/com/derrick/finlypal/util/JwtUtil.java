@@ -1,10 +1,12 @@
 package com.derrick.finlypal.util;
 
+import com.derrick.finlypal.exception.NotAuthorizedException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -87,5 +89,27 @@ public class JwtUtil {
 
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    public void validateUserAccess(String user) throws NotAuthorizedException {
+        String authenticatedUsername = getAuthenticationUsername();
+
+        if (!authenticatedUsername.equals(user)) {
+            throw new NotAuthorizedException(
+                    "Access denied: User " + authenticatedUsername + " is not authorized to perform this action"
+            );
+        }
+    }
+
+    private String getAuthenticationUsername() throws NotAuthorizedException {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        } else if (principal instanceof String username) {
+            return username;
+        }
+
+        throw new NotAuthorizedException("User authentication details are missing");
     }
 }

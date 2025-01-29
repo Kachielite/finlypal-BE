@@ -2,6 +2,7 @@ package com.derrick.finlypal.serviceImp;
 
 import com.derrick.finlypal.dto.AuthenticationRequestDTO;
 import com.derrick.finlypal.dto.AuthenticationResponseDTO;
+import com.derrick.finlypal.dto.GeneralResponseDTO;
 import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
 import com.derrick.finlypal.entity.User;
 import com.derrick.finlypal.exception.InternalServerErrorException;
@@ -136,10 +137,16 @@ public class AuthServiceImpl implements AuthService {
             log.error("Could not find user with email {}", username);
             throw new NotFoundException("User with email " + username + " not found");
         } catch (RuntimeException | IOException e) {
+            log.error("Error while refreshing token", e);
             throw new InternalServerErrorException("An unknown error occurred. User could not be authenticated.");
         }
 
 
+    }
+
+    @Override
+    public GeneralResponseDTO getPasswordRequestToken(Long userId) throws NotFoundException, InternalServerErrorException {
+        return null;
     }
 
     private AuthenticationResponseDTO generateAuthResponse(User user) {

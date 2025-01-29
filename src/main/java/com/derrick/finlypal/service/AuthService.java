@@ -2,6 +2,7 @@ package com.derrick.finlypal.service;
 
 import com.derrick.finlypal.dto.AuthenticationRequestDTO;
 import com.derrick.finlypal.dto.AuthenticationResponseDTO;
+import com.derrick.finlypal.dto.GeneralResponseDTO;
 import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotFoundException;
@@ -18,5 +19,8 @@ public interface AuthService {
             throws UserAlreadyExistsException, InternalServerErrorException;
 
     void refreshToken(HttpServletRequest request, HttpServletResponse response)
+            throws NotFoundException, InternalServerErrorException;
+
+    GeneralResponseDTO getPasswordRequestToken(Long userId)
             throws NotFoundException, InternalServerErrorException;
 }
