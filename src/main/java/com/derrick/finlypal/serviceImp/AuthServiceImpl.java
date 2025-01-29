@@ -10,6 +10,9 @@ import com.derrick.finlypal.exception.UserAlreadyExistsException;
 import com.derrick.finlypal.repository.UserRepository;
 import com.derrick.finlypal.service.AuthService;
 import com.derrick.finlypal.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +20,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +92,54 @@ public class AuthServiceImpl implements AuthService {
             log.error("Error while registering user {}", usersRegistrationRequestDTO.toString());
             throw new InternalServerErrorException("An unknown error occurred. User could not be registered.");
         }
+    }
+
+    @Override
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response)
+            throws NotFoundException, InternalServerErrorException {
+        log.info("Received refresh token request");
+        String authHeader = request.getHeader("Authorization");
+        String username = null;
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.info("No Bearer token found");
+            return;
+        }
+
+        try {
+            log.info("Extracting username from auth header");
+            String refreshToken = authHeader.substring(7);
+            username = jwtUtil.extractUsername(refreshToken);
+
+            if (username != null) {
+                String finalUsername = username;
+
+                log.info("Validating username {}", username);
+                User user = userRepository.findByEmail(username).orElseThrow(() -> new NotFoundException(
+                        "User with email " + finalUsername + " not found")
+                );
+
+                log.info("Generating new token for user {}", finalUsername);
+                String accessToken = jwtUtil.generateAccessToken(user);
+
+                AuthenticationResponseDTO responseDTO = AuthenticationResponseDTO
+                        .builder()
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken)
+                        .build();
+
+                log.info("Successfully refreshed token");
+                new ObjectMapper().writeValue(response.getOutputStream(), responseDTO);
+            }
+
+        } catch (NotFoundException e) {
+            log.error("Could not find user with email {}", username);
+            throw new NotFoundException("User with email " + username + " not found");
+        } catch (RuntimeException | IOException e) {
+            throw new InternalServerErrorException("An unknown error occurred. User could not be authenticated.");
+        }
+
+
     }
 
     private AuthenticationResponseDTO generateAuthResponse(User user) {

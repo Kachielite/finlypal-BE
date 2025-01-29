@@ -1,4 +1,4 @@
-package com.derrick.finlypal.serviceImp;
+package com.derrick.finlypal.util;
 
 import com.derrick.finlypal.dto.ErrorResponseDTO;
 import org.springframework.http.HttpStatus;

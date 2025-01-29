@@ -8,7 +8,9 @@ import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.exception.UserAlreadyExistsException;
 import com.derrick.finlypal.service.AuthService;
-import com.derrick.finlypal.serviceImp.InputValidation;
+import com.derrick.finlypal.util.InputValidation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,15 +43,18 @@ public class AuthenticationController {
 
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(ErrorResponseDTO.builder()
+                    .status(HttpStatus.UNAUTHORIZED)
                     .message(e.getMessage())
                     .build(), HttpStatus.UNAUTHORIZED);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(ErrorResponseDTO.builder()
                     .message(e.getMessage())
+                    .status(HttpStatus.NOT_FOUND)
                     .build(), HttpStatus.NOT_FOUND);
         } catch (InternalServerErrorException e) {
             return new ResponseEntity<>(ErrorResponseDTO.builder()
                     .message(e.getMessage())
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -69,6 +74,7 @@ public class AuthenticationController {
                     ErrorResponseDTO
                             .builder()
                             .message(e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .build(),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
@@ -76,10 +82,17 @@ public class AuthenticationController {
             return new ResponseEntity<>(
                     ErrorResponseDTO
                             .builder()
+                            .status(HttpStatus.CONFLICT)
                             .message(e.getMessage())
                             .build(),
                     HttpStatus.CONFLICT
             );
         }
+    }
+
+    @PostMapping("/refresh-token")
+    public void refreshToken(HttpServletResponse response, HttpServletRequest request)
+            throws NotFoundException, InternalServerErrorException {
+        authService.refreshToken(request, response);
     }
 }
