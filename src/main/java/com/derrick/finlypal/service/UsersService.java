@@ -10,7 +10,7 @@ import com.derrick.finlypal.exception.NotFoundException;
 
 public interface UsersService {
     UsersResponseDTO getUserDetails(Long userId)
-            throws NotFoundException, InternalServerErrorException, NotAuthorizedException;
+            throws NotFoundException, InternalServerErrorException, NotAuthorizedException, BadRequestException;
 
     GeneralResponseDTO updateUserDetails(Long userId, UsersUpdateRequestDTO updateRequestDTO)
             throws NotFoundException, InternalServerErrorException, NotAuthorizedException, BadRequestException;

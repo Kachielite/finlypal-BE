@@ -28,9 +28,12 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public UsersResponseDTO getUserDetails(Long userId)
-            throws NotFoundException, InternalServerErrorException, NotAuthorizedException {
+            throws NotFoundException, InternalServerErrorException, NotAuthorizedException, BadRequestException {
 
         try {
+            if (userId == null) {
+                throw new BadRequestException("userId is null");
+            }
             log.info("Received request to get user details for {}", userId);
             User user = validateUserAccess(userId);
 
@@ -42,6 +45,9 @@ public class UsersServiceImpl implements UsersService {
                     .name(user.getName())
                     .build();
 
+        } catch (BadRequestException e) {
+            log.error("userId is null", e);
+            throw e;
         } catch (NotFoundException e) {
             log.error("User not found for user", e);
             throw e;
@@ -72,6 +78,9 @@ public class UsersServiceImpl implements UsersService {
 
                 user.setPassword(passwordEncoder.encode(updateRequestDTO.newPassword()));
             }
+
+            log.info("Updating details for user with id {}", userId);
+            userRepository.save(user);
 
             return GeneralResponseDTO
                     .builder()
