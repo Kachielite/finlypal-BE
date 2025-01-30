@@ -17,7 +17,7 @@ public class SwaggerConfiguration {
     GroupedOpenApi publicApi() {
         return GroupedOpenApi
                 .builder()
-                .group("finlypal")
+                .group("public")
                 .pathsToMatch("/**")
                 .build();
     }
@@ -36,4 +36,6 @@ public class SwaggerConfiguration {
                                 )
                 );
     }
+
+    
 }

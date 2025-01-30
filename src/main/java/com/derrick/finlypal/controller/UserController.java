@@ -9,6 +9,8 @@ import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.service.UsersService;
 import com.derrick.finlypal.util.InputValidation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,14 +19,16 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
+@Tag(name = "Users", description = "Manage user")
 public class UserController {
 
     private final UsersService usersService;
     private final InputValidation inputValidation;
 
     @GetMapping("/{userId}")
+    @Operation(summary = "Get User Details", description = "Fetch current logged in user's details")
     public ResponseEntity<ApiResponseDTO> getUser(@PathVariable String userId) {
         try {
             return new ResponseEntity<>(usersService.getUserDetails(Long.valueOf(userId)), HttpStatus.OK);
@@ -68,6 +72,7 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
+    @Operation(summary = "Update User Details", description = "Update current logged in user's details")
     public ResponseEntity<ApiResponseDTO> updateUserDetail(
             @Valid @RequestBody UsersUpdateRequestDTO userDetailsDTO,
             BindingResult bindingResult,
