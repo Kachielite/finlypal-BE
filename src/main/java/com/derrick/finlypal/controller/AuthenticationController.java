@@ -4,6 +4,8 @@ import com.derrick.finlypal.dto.*;
 import com.derrick.finlypal.exception.*;
 import com.derrick.finlypal.service.AuthService;
 import com.derrick.finlypal.util.InputValidation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -17,12 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "User authentication and registration APIs")
 public class AuthenticationController {
 
     private final AuthService authService;
     private final InputValidation inputValidation;
 
     @PostMapping("/login")
+    @Operation(summary = "User login", description = "Authenticates a user and returns an access token.")
     public ResponseEntity<ApiResponseDTO> authenticate(
             @Valid @RequestBody AuthenticationRequestDTO authenticationRequestDTO,
             BindingResult bindingResult) {
@@ -52,6 +56,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "User registration", description = "Registers a new user.")
     public ResponseEntity<ApiResponseDTO> register(
             @Valid @RequestBody UsersRegistrationRequestDTO usersRegistrationRequestDTO,
             BindingResult bindingResult) {
@@ -83,12 +88,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh-token")
+    @Operation(summary = "Refresh Access Token", description = "Refresh user's authentication access token")
     public void refreshToken(HttpServletResponse response, HttpServletRequest request)
             throws NotFoundException, InternalServerErrorException {
         authService.refreshToken(request, response);
     }
 
     @GetMapping("/reset-password-token")
+    @Operation(summary = "Generate Password Reset Token", description = "Generates a reset password token link that is sent to the provided email")
     public ResponseEntity<ApiResponseDTO> resetPasswordToken(@RequestParam String email) {
         try {
             return new ResponseEntity<>(authService.getPasswordRequestToken(email), HttpStatus.OK);
@@ -115,6 +122,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/reset-password")
+    @Operation(summary = "Reset User Password", description = "Reset a user's password")
     public ResponseEntity<ApiResponseDTO> resetPassword(
             @Valid @RequestBody UsersUpdateRequestDTO updateRequestDTO,
             @RequestParam String token,
