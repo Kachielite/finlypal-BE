@@ -1,11 +1,7 @@
 package com.derrick.finlypal.service;
 
-import com.derrick.finlypal.dto.AuthenticationRequestDTO;
-import com.derrick.finlypal.dto.AuthenticationResponseDTO;
-import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
-import com.derrick.finlypal.exception.InternalServerErrorException;
-import com.derrick.finlypal.exception.NotFoundException;
-import com.derrick.finlypal.exception.UserAlreadyExistsException;
+import com.derrick.finlypal.dto.*;
+import com.derrick.finlypal.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,4 +15,10 @@ public interface AuthService {
 
     void refreshToken(HttpServletRequest request, HttpServletResponse response)
             throws NotFoundException, InternalServerErrorException;
+
+    GeneralResponseDTO getPasswordRequestToken(String email)
+            throws InternalServerErrorException, BadRequestException;
+
+    GeneralResponseDTO resetPassword(String token, UsersUpdateRequestDTO usersUpdateRequestDTO)
+            throws InternalServerErrorException, BadRequestException, NotAuthorizedException, NotFoundException;
 }
