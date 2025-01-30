@@ -43,14 +43,14 @@ public class UsersServiceImpl implements UsersService {
                     .build();
 
         } catch (NotFoundException e) {
-            log.error("User not found for user {}", userId);
-            throw new NotFoundException("User with id " + userId + " not found");
+            log.error("User not found for user", e);
+            throw e;
         } catch (NotAuthorizedException e) {
-            log.error("User not authorized for user {}", userId);
-            throw new NotAuthorizedException("Access denied: User with id " + userId + " not authorized to access this resource");
+            log.error("User not authorized for user", e);
+            throw e;
         } catch (Exception e) {
             log.error("Error while getting user details", e);
-            throw new InternalServerErrorException("An internal server error occurred");
+            throw new InternalServerErrorException("An internal server error occurred: " + e.getMessage());
         }
     }
 
@@ -80,17 +80,17 @@ public class UsersServiceImpl implements UsersService {
                     .build();
 
         } catch (NotFoundException e) {
-            log.error("User not found for user {}", userId);
-            throw new NotFoundException("User with id " + userId + " not found");
+            log.error("User not found for user {}", userId, e);
+            throw e;
         } catch (NotAuthorizedException e) {
-            log.error("User not authorized for user {}", userId);
-            throw new NotAuthorizedException("Access denied: User with id " + userId + " not authorized to access this resource");
+            log.error("User not authorized for user {}", userId, e);
+            throw e;
         } catch (BadRequestException e) {
             log.error("Password updated failed {}", userId);
-            throw new NotAuthorizedException("Old password does not match");
+            throw e;
         } catch (Exception e) {
             log.error("Error while getting user details", e);
-            throw new InternalServerErrorException("An internal server error occurred");
+            throw new InternalServerErrorException("An internal server error occurred: " + e.getMessage());
         }
     }
 

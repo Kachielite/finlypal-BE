@@ -1,12 +1,7 @@
 package com.derrick.finlypal.controller;
 
-import com.derrick.finlypal.dto.ApiResponseDTO;
-import com.derrick.finlypal.dto.AuthenticationRequestDTO;
-import com.derrick.finlypal.dto.ErrorResponseDTO;
-import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
-import com.derrick.finlypal.exception.InternalServerErrorException;
-import com.derrick.finlypal.exception.NotFoundException;
-import com.derrick.finlypal.exception.UserAlreadyExistsException;
+import com.derrick.finlypal.dto.*;
+import com.derrick.finlypal.exception.*;
 import com.derrick.finlypal.service.AuthService;
 import com.derrick.finlypal.util.InputValidation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,10 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -31,7 +23,7 @@ public class AuthenticationController {
     private final InputValidation inputValidation;
 
     @PostMapping("/login")
-    ResponseEntity<ApiResponseDTO> authenticate(
+    public ResponseEntity<ApiResponseDTO> authenticate(
             @Valid @RequestBody AuthenticationRequestDTO authenticationRequestDTO,
             BindingResult bindingResult) {
 
@@ -43,24 +35,24 @@ public class AuthenticationController {
 
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(ErrorResponseDTO.builder()
-                    .status(HttpStatus.UNAUTHORIZED)
+                    .code(HttpStatus.UNAUTHORIZED.value())
                     .message(e.getMessage())
                     .build(), HttpStatus.UNAUTHORIZED);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(ErrorResponseDTO.builder()
                     .message(e.getMessage())
-                    .status(HttpStatus.NOT_FOUND)
+                    .code(HttpStatus.NOT_FOUND.value())
                     .build(), HttpStatus.NOT_FOUND);
         } catch (InternalServerErrorException e) {
             return new ResponseEntity<>(ErrorResponseDTO.builder()
                     .message(e.getMessage())
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping("/register")
-    ResponseEntity<ApiResponseDTO> register(
+    public ResponseEntity<ApiResponseDTO> register(
             @Valid @RequestBody UsersRegistrationRequestDTO usersRegistrationRequestDTO,
             BindingResult bindingResult) {
 
@@ -74,7 +66,7 @@ public class AuthenticationController {
                     ErrorResponseDTO
                             .builder()
                             .message(e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build(),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
@@ -82,7 +74,7 @@ public class AuthenticationController {
             return new ResponseEntity<>(
                     ErrorResponseDTO
                             .builder()
-                            .status(HttpStatus.CONFLICT)
+                            .code(HttpStatus.CONFLICT.value())
                             .message(e.getMessage())
                             .build(),
                     HttpStatus.CONFLICT
@@ -94,5 +86,82 @@ public class AuthenticationController {
     public void refreshToken(HttpServletResponse response, HttpServletRequest request)
             throws NotFoundException, InternalServerErrorException {
         authService.refreshToken(request, response);
+    }
+
+    @GetMapping("/reset-password-token")
+    public ResponseEntity<ApiResponseDTO> resetPasswordToken(@RequestParam String email) {
+        try {
+            return new ResponseEntity<>(authService.getPasswordRequestToken(email), HttpStatus.OK);
+
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(
+                    ErrorResponseDTO
+                            .builder()
+                            .code(HttpStatus.BAD_REQUEST.value())
+                            .message(e.getMessage())
+                            .build(),
+                    HttpStatus.BAD_REQUEST
+            );
+        } catch (InternalServerErrorException e) {
+            return new ResponseEntity<>(
+                    ErrorResponseDTO
+                            .builder()
+                            .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .message(e.getMessage())
+                            .build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponseDTO> resetPassword(
+            @Valid @RequestBody UsersUpdateRequestDTO updateRequestDTO,
+            @RequestParam String token,
+            BindingResult bindingResult
+    ) {
+        ResponseEntity<ErrorResponseDTO> errors = inputValidation.validate(bindingResult);
+        if (errors != null) return new ResponseEntity<>(errors.getBody(), errors.getStatusCode());
+
+        try {
+            return new ResponseEntity<>(authService.resetPassword(token, updateRequestDTO), HttpStatus.OK);
+        } catch (InternalServerErrorException e) {
+            return new ResponseEntity<>(
+                    ErrorResponseDTO
+                            .builder()
+                            .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .message(e.getMessage())
+                            .build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(
+                    ErrorResponseDTO
+                            .builder()
+                            .code(HttpStatus.BAD_REQUEST.value())
+                            .message(e.getMessage())
+                            .build(),
+                    HttpStatus.BAD_REQUEST
+            );
+        } catch (NotAuthorizedException e) {
+            return new ResponseEntity<>(
+                    ErrorResponseDTO
+                            .builder()
+                            .code(HttpStatus.FORBIDDEN.value())
+                            .message(e.getMessage())
+                            .build(),
+                    HttpStatus.FORBIDDEN
+            );
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(
+                    ErrorResponseDTO
+                            .builder()
+                            .code(HttpStatus.NOT_FOUND.value())
+                            .message(e.getMessage())
+                            .build(),
+                    HttpStatus.NOT_FOUND
+            );
+        }
+
     }
 }

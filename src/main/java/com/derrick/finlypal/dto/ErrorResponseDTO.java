@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 
@@ -16,6 +15,6 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorResponseDTO implements ApiResponseDTO {
     private String message;
-    private HttpStatus status;
+    private int code;
     private Map<String, String> errors;
 }

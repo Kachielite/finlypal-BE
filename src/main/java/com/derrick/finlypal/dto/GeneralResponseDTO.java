@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 @Builder
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class GeneralResponseDTO {
+public class GeneralResponseDTO implements ApiResponseDTO {
     private String message;
     private HttpStatus status;
 
