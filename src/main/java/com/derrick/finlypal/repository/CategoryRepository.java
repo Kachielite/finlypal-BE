@@ -12,6 +12,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findByExpensesId(Long expensesId, Pageable pageable);
 
-    List<Category> findAllByOrderByNameAsc();
+    List<Category> findAll(Pageable pageable);
 
 }
