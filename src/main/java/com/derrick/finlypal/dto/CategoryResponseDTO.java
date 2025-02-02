@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CategoryResponseDTO {
+public class CategoryResponseDTO implements ApiResponseDTO {
     private Long id;
     private String name;
     private String displayName;

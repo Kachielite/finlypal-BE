@@ -9,12 +9,11 @@ import com.derrick.finlypal.repository.CategoryRepository;
 import com.derrick.finlypal.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Pageable;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -23,18 +22,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    List<Category> categoryList = new ArrayList<>();
-
     @Override
-    public List<CategoryResponseDTO> getAllCategories(int page, int pageSize)
+    public Page<CategoryResponseDTO> getAllCategories(int page, int pageSize)
             throws InternalServerErrorException {
         log.info("Received request to get all categories");
         try {
-            Pageable pageable = (Pageable) PageRequest.of(page, pageSize);
+            Pageable pageable = PageRequest.of(page, pageSize);
             log.info("Retrieving all categories");
-            List<Category> categories = categoryRepository.findAll(pageable);
 
-            categoryList.addAll(categories);
+            Page<Category> categories = categoryRepository.findAll(pageable);
             return convertCategoryListToCategoryResponseDTOList(categories, false);
 
         } catch (Exception e) {
@@ -71,20 +67,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponseDTO> getCategoriesByName(String categoryName, int page, int pageSize)
+    public Page<CategoryResponseDTO> getCategoriesByName(String categoryName, int page, int pageSize)
             throws InternalServerErrorException {
         log.info("Received request to get categories by name {} ", categoryName);
-        if (categoryName == null || categoryName.isEmpty()) {
-            log.info("Received request to get categories by name empty");
-            return new ArrayList<>();
-        }
+
 
         try {
-            Pageable pageable = (Pageable) PageRequest.of(page, pageSize);
+            Pageable pageable = PageRequest.of(page, pageSize);
             log.info("Retrieving all categories by name {}", categoryName);
-            List<Category> categories = categoryRepository.findByNameContaining(categoryName, pageable);
+            Page<Category> categories = categoryRepository.findByNameContaining(categoryName, pageable);
 
-            categoryList.addAll(categories);
             log.info("Retrieved all categories by name {}", categoryName);
             return convertCategoryListToCategoryResponseDTOList(categories, false);
 
@@ -96,7 +88,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponseDTO> getCategoriesByExpenseId(Long expenseId, int page, int pageSize)
+    public Page<CategoryResponseDTO> getCategoriesByExpenseId(Long expenseId, int page, int pageSize)
             throws InternalServerErrorException, BadRequestException {
         log.info("Received request to get categories by expense id {} ", expenseId);
         try {
@@ -105,11 +97,10 @@ public class CategoryServiceImpl implements CategoryService {
                 throw new BadRequestException("Expense id is null or empty");
             }
 
-            Pageable pageable = (Pageable) PageRequest.of(page, pageSize);
+            Pageable pageable = PageRequest.of(page, pageSize);
             log.info("Retrieving all categories by expense id {}", expenseId);
-            List<Category> categories = categoryRepository.findByExpensesId(expenseId, pageable);
+            Page<Category> categories = categoryRepository.findByExpensesId(expenseId, pageable);
 
-            categoryList.addAll(categories);
             log.info("Retrieved all categories by expense id {}", expenseId);
             return convertCategoryListToCategoryResponseDTOList(categories, true);
 
@@ -123,25 +114,17 @@ public class CategoryServiceImpl implements CategoryService {
 
     }
 
-    private List<CategoryResponseDTO> convertCategoryListToCategoryResponseDTOList(
-            List<Category> categories,
+    private Page<CategoryResponseDTO> convertCategoryListToCategoryResponseDTOList(
+            Page<Category> categories,
             boolean includeExpenses) {
 
-        List<CategoryResponseDTO> categoryResponseDTOList = new ArrayList<>();
-
-        for (Category category : categories) {
-            CategoryResponseDTO categoryResponseDTO = CategoryResponseDTO
-                    .builder()
-                    .id(includeExpenses ? null : category.getId())
-                    .name(includeExpenses ? null : category.getName())
-                    .description(includeExpenses ? null : category.getDescription())
-                    .displayName(includeExpenses ? null : category.getDisplayName())
-                    .expenses(includeExpenses ? category.getExpenses() : null)
-                    .build();
-
-            categoryResponseDTOList.add(categoryResponseDTO);
-        }
-
-        return categoryResponseDTOList;
+        // Convert Page<Category> to Page<CategoryResponseDTO>
+        return categories.map(category -> CategoryResponseDTO.builder()
+                .id(includeExpenses ? null : category.getId())
+                .name(includeExpenses ? null : category.getName())
+                .description(includeExpenses ? null : category.getDescription())
+                .displayName(includeExpenses ? null : category.getDisplayName())
+                .expenses(includeExpenses ? category.getExpenses() : null)
+                .build());
     }
 }
