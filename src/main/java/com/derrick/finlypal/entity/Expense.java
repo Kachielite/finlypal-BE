@@ -1,6 +1,5 @@
 package com.derrick.finlypal.entity;
 
-import com.derrick.finlypal.enums.Category;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -19,13 +18,20 @@ public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @NotNull(message = "Description is required")
     private String description;
+
+    @NotNull(message = "Amount is required")
     private BigDecimal amount = BigDecimal.ZERO;
+
     @NotNull(message = "Date is required")
     private LocalDate date;
-    @Enumerated(EnumType.STRING)
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

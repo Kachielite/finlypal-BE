@@ -1,5 +1,6 @@
 package com.derrick.finlypal.exception;
 
+import com.derrick.finlypal.dto.ApiResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -10,14 +11,12 @@ import java.util.Map;
 
 public class JwtException {
     public static void handleException(HttpServletResponse response, String message, HttpStatus status) throws IOException {
-        response.setStatus(status.value());
         response.setContentType("application/json");
 
         Map<String, Object> errors = new HashMap<>();
-        errors.put("message", message);
-        errors.put("status", status.value());
+        errors.put("error", message);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(response.getOutputStream(), errors);
+        objectMapper.writeValue(response.getOutputStream(), new ApiResponseDTO<>(401, "Unauthorized", errors));
     }
 }
