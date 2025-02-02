@@ -6,6 +6,7 @@ import com.derrick.finlypal.dto.GeneralResponseDTO;
 import com.derrick.finlypal.entity.Category;
 import com.derrick.finlypal.entity.Expense;
 import com.derrick.finlypal.entity.User;
+import com.derrick.finlypal.enums.ExpenseType;
 import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotAuthorizedException;
@@ -17,6 +18,7 @@ import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -71,9 +73,9 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public Page<ExpenseResponseDTO> findAllByUserId(Pageable pageable)
+    public Page<ExpenseResponseDTO> findAllByUserId(int page, int pageSize)
             throws InternalServerErrorException {
-
+        Pageable pageable = PageRequest.of(page, pageSize);
         try {
             Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
 
@@ -89,9 +91,10 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public Page<ExpenseResponseDTO> findAllByCategoryIdAndUserId(Long categoryId, Pageable pageable)
+    public Page<ExpenseResponseDTO> findAllByCategoryIdAndUserId(Long categoryId, int page, int pageSize)
             throws InternalServerErrorException {
         log.info("Finding expenses with category id {}", categoryId);
+        Pageable pageable = PageRequest.of(page, pageSize);
         try {
             Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
             Page<Expense> expenses = expenseRepository.findAllByCategoryIdAndUserId(categoryId, userId, pageable);
@@ -106,10 +109,11 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 
     @Override
-    public Page<ExpenseResponseDTO> findAllByDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable)
+    public Page<ExpenseResponseDTO> findAllByDateBetween(LocalDate startDate, LocalDate endDate, int page, int pageSize)
             throws BadRequestException, InternalServerErrorException {
         log.info("Finding expenses with date between {} and {}", startDate, endDate);
 
+        Pageable pageable = PageRequest.of(page, pageSize);
         try {
             Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
 
@@ -129,6 +133,42 @@ public class ExpenseServiceImpl implements ExpenseService {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
+
+    @Override
+    public Page<ExpenseResponseDTO> findAllByTypeAndUserIdOrDateBetween(ExpenseType expenseType, LocalDate startDate, LocalDate endDate, int page, int pageSize)
+            throws BadRequestException, InternalServerErrorException {
+        log.info("Finding expenses of type {} with date between {} and {}", expenseType, startDate, endDate);
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+            if (startDate != null && endDate == null) {
+                throw new BadRequestException("Start date is required when end date is provided");
+            }
+
+            if (startDate == null && endDate != null) {
+                throw new BadRequestException("End date is required when start date is null");
+            }
+
+            if (startDate != null && startDate.isAfter(endDate)) {
+                throw new BadRequestException("Start date cannot be after end date");
+            }
+
+            log.info("Searching expenses of type {} with date between {} and {}", expenseType, startDate, endDate);
+            Page<Expense> expenses = expenseRepository.findAllByTypeAndUserIdOrDateBetween(expenseType, userId, startDate, endDate, pageable);
+
+            log.info("Successfully found {} expenses of type {}", expenses.getTotalElements(), expenseType);
+            return convertExpenseToExpenseDTO(expenses);
+
+        } catch (BadRequestException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
 
     @Override
     public GeneralResponseDTO addExpense(ExpenseRequestDTO expenseRequestDTO)

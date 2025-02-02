@@ -1,5 +1,6 @@
 package com.derrick.finlypal.entity;
 
+import com.derrick.finlypal.enums.ExpenseType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -29,6 +30,10 @@ public class Expense {
 
     @NotNull(message = "Date is required")
     private LocalDate date;
+
+    @NotNull(message = "Expense type is required")
+    @Enumerated(EnumType.STRING)
+    private ExpenseType type;
 
     @ManyToOne
     @JoinColumn(name = "category_id")

@@ -1,6 +1,7 @@
 package com.derrick.finlypal.repository;
 
 import com.derrick.finlypal.entity.Expense;
+import com.derrick.finlypal.enums.ExpenseType;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,15 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @NotNull(message = "Start date is required")
             LocalDate startDate,
             @NotNull(message = "End date is required")
+            @FutureOrPresent(message = "End date must not be less than start date")
+            LocalDate endDate,
+            Pageable pageable
+    );
+
+    Page<Expense> findAllByTypeAndUserIdOrDateBetween(
+            ExpenseType type,
+            Long userId,
+            LocalDate startDate,
             @FutureOrPresent(message = "End date must not be less than start date")
             LocalDate endDate,
             Pageable pageable

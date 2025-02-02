@@ -1,5 +1,6 @@
 package com.derrick.finlypal.dto;
 
+import com.derrick.finlypal.enums.ExpenseType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class ExpenseResponseDTO extends ApiResponseDTO<ExpenseResponseDTO> {
     private String description;
     private BigDecimal amount;
     private LocalDate date;
+    private ExpenseType type;
     private Long category_id;
 }
