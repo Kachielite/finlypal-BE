@@ -12,7 +12,7 @@ import lombok.Data;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CategoryResponseDTO extends ApiResponseDTO<CategoryResponseDTO> {
+public class CategoryResponseDTO {
     private Long id;
     private String name;
     @JsonProperty("display_name")

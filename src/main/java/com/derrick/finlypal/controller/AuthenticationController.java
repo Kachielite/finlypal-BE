@@ -38,19 +38,21 @@ public class AuthenticationController {
         try {
             // Validate Request Body
             Map<String, String> errors = inputValidation.validate(bindingResult);
-            if (!errors.isEmpty()) {
+            if (errors != null && !errors.isEmpty()) {
                 return new ResponseEntity<>(
                         new ApiResponseDTO<>(400, "Validation Error", errors),
                         HttpStatus.BAD_REQUEST
                 );
             }
 
-            AuthenticationResponseDTO authResponse = authService.login(authenticationRequestDTO);
-            ApiResponseDTO<AuthenticationResponseDTO> response = new ApiResponseDTO<>(
-                    200, "Login successful", authResponse
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(
+                            200,
+                            "Login successful",
+                            authService.login(authenticationRequestDTO)
+                    ),
+                    HttpStatus.OK
             );
-
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
 
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(

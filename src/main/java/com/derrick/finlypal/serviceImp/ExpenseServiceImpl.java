@@ -35,22 +35,25 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public ExpenseResponseDTO findById(Long id)
+    public ExpenseResponseDTO findById(Long expense_id)
             throws NotFoundException, NotAuthorizedException, InternalServerErrorException {
-        log.info("Finding expense with id {}", id);
+        log.info("Finding expense with id {}", expense_id);
         try {
-            Expense expense = expenseRepository.findById(id).orElseThrow(
+            Expense expense = expenseRepository.findById(expense_id).orElseThrow(
                     () -> new NotFoundException("Could not find expense with id")
             );
 
             Long expenseUserId = expense.getUser().getId();
             Long loggedInUserId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
 
-            if (expenseUserId.equals(loggedInUserId)) {
+            log.info("expenseUserId {}", expenseUserId);
+            log.info("loggedInUserId {}", loggedInUserId);
+
+            if (!expenseUserId.equals(loggedInUserId)) {
                 throw new NotAuthorizedException("You are not authorized to view this expense");
             }
 
-            log.info("Found expense with id {}", id);
+            log.info("Found expense with id {}", expense_id);
             return ExpenseResponseDTO
                     .builder()
                     .id(expense.getId())
@@ -61,13 +64,13 @@ public class ExpenseServiceImpl implements ExpenseService {
                     .build();
 
         } catch (NotFoundException e) {
-            log.info("Could not find expense with id {}", id);
+            log.info("Could not find expense with id {}", expense_id);
             throw e;
         } catch (NotAuthorizedException e) {
-            log.error("User with id {} is not authorized to view this expense", id);
+            log.error("User with id {} is not authorized to view this expense", expense_id);
             throw e;
         } catch (Exception e) {
-            log.error("Unexpected error occurred while trying to find expense with id {}", id);
+            log.error("Unexpected error occurred while trying to find expense with id {}", expense_id);
             throw new InternalServerErrorException(e.getMessage());
         }
     }
@@ -185,6 +188,7 @@ public class ExpenseServiceImpl implements ExpenseService {
             Expense expense = Expense
                     .builder()
                     .description(expenseRequestDTO.description())
+                    .type(expenseRequestDTO.type())
                     .amount(expenseRequestDTO.amount())
                     .user(user)
                     .date(expenseRequestDTO.date())
@@ -235,6 +239,10 @@ public class ExpenseServiceImpl implements ExpenseService {
 
             if (expenseRequestDTO.date() != null) {
                 expense.setDate(expenseRequestDTO.date());
+            }
+
+            if (expenseRequestDTO.type() != null) {
+                expense.setType(expenseRequestDTO.type());
             }
 
             if (expenseRequestDTO.categoryID() != null) {
@@ -304,6 +312,7 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .id(expense.getId())
                 .date(expense.getDate())
                 .amount(expense.getAmount())
+                .type(expense.getType())
                 .description(expense.getDescription())
                 .category_id(expense.getCategory().getId())
                 .build()

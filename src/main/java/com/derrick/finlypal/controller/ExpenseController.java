@@ -8,14 +8,19 @@ import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.service.ExpenseService;
+import com.derrick.finlypal.util.InputValidation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/expenses")
@@ -24,8 +29,9 @@ import java.time.LocalDate;
 public class ExpenseController {
 
     private final ExpenseService expenseService;
+    private final InputValidation inputValidation;
 
-    @GetMapping("/{expense_id}")
+    @GetMapping("/id/{expense_id}")
     @Operation(summary = "Get Expense", description = "Fetch expense by id")
     public ResponseEntity<ApiResponseDTO<?>> getExpenseById(@PathVariable Long expense_id) {
         try {
@@ -94,12 +100,12 @@ public class ExpenseController {
         }
     }
 
-    @GetMapping("/{category_id}")
+    @GetMapping("/category/{category_id}")
     @Operation(summary = "Get expense by category", description = "Fetch expenses by category id for the logged-in user")
     public ResponseEntity<ApiResponseDTO<?>> getExpensesByCategoryId(
             @PathVariable Long category_id,
-            @RequestParam int page,
-            @RequestParam int pageSize
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
         try {
             return new ResponseEntity<>(
@@ -164,17 +170,23 @@ public class ExpenseController {
     @Operation(summary = "Get expense by type", description = "Fetch expenses by expense type and dates for the logged-in user")
     public ResponseEntity<ApiResponseDTO<?>> getExpensesByTypeAndDate(
             @PathVariable ExpenseType type,
-            @RequestParam LocalDate start_date,
-            @RequestParam LocalDate end_date,
-            @RequestParam int page,
-            @RequestParam int pageSize
+            @RequestParam(required = false) Optional<LocalDate> start_date,
+            @RequestParam(required = false) Optional<LocalDate> end_date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
         try {
             return new ResponseEntity<>(
                     new ApiResponseDTO<>(
                             HttpStatus.OK.value(),
                             "Successfully fetched expenses",
-                            expenseService.findAllByTypeAndUserIdOrDateBetween(type, start_date, end_date, page, pageSize)
+                            expenseService.findAllByTypeAndUserIdOrDateBetween(
+                                    type,
+                                    start_date.orElse(null),
+                                    end_date.orElse(null),
+                                    page,
+                                    pageSize
+                            )
                     ),
                     HttpStatus.OK
             );
@@ -202,9 +214,18 @@ public class ExpenseController {
     @PostMapping
     @Operation(summary = "Add expense", description = "Create new expense")
     public ResponseEntity<ApiResponseDTO<?>> createExpense(
-            @RequestBody ExpenseRequestDTO expense
+            @Valid @RequestBody ExpenseRequestDTO expense,
+            BindingResult bindingResult
     ) {
         try {
+            // Validate Request Body
+            Map<String, String> errors = inputValidation.validate(bindingResult);
+            if (errors != null && !errors.isEmpty()) {
+                return new ResponseEntity<>(
+                        new ApiResponseDTO<>(400, "Validation Error", errors),
+                        HttpStatus.BAD_REQUEST
+                );
+            }
             return new ResponseEntity<>(
                     new ApiResponseDTO<>(
                             HttpStatus.CREATED.value(),

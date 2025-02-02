@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExpenseResponseDTO extends ApiResponseDTO<ExpenseResponseDTO> {
+public class ExpenseResponseDTO {
     private Long id;
     private String description;
     private BigDecimal amount;
