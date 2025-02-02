@@ -17,6 +17,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -29,62 +31,76 @@ public class AuthenticationController {
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticates a user and returns an access token.")
     @SecurityRequirements() // ❌ Exclude from security
-    public ResponseEntity<ApiResponseDTO> authenticate(
+    public ResponseEntity<ApiResponseDTO<?>> authenticate(
             @Valid @RequestBody AuthenticationRequestDTO authenticationRequestDTO,
             BindingResult bindingResult) {
 
         try {
-            ResponseEntity<ErrorResponseDTO> errors = inputValidation.validate(bindingResult);
-            if (errors != null) return new ResponseEntity<>(errors.getBody(), errors.getStatusCode());
+            // Validate Request Body
+            Map<String, String> errors = inputValidation.validate(bindingResult);
+            if (!errors.isEmpty()) {
+                return new ResponseEntity<>(
+                        new ApiResponseDTO<>(400, "Validation Error", errors),
+                        HttpStatus.BAD_REQUEST
+                );
+            }
 
-            return new ResponseEntity<>(authService.login(authenticationRequestDTO), HttpStatus.CREATED);
+            AuthenticationResponseDTO authResponse = authService.login(authenticationRequestDTO);
+            ApiResponseDTO<AuthenticationResponseDTO> response = new ApiResponseDTO<>(
+                    200, "Login successful", authResponse
+            );
+
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
 
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(ErrorResponseDTO.builder()
-                    .code(HttpStatus.UNAUTHORIZED.value())
-                    .message(e.getMessage())
-                    .build(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(400, e.getMessage(), null),
+                    HttpStatus.UNAUTHORIZED
+            );
         } catch (NotFoundException e) {
-            return new ResponseEntity<>(ErrorResponseDTO.builder()
-                    .message(e.getMessage())
-                    .code(HttpStatus.NOT_FOUND.value())
-                    .build(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(404, e.getMessage(), null),
+                    HttpStatus.NOT_FOUND
+            );
         } catch (InternalServerErrorException e) {
-            return new ResponseEntity<>(ErrorResponseDTO.builder()
-                    .message(e.getMessage())
-                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(500, e.getMessage(), null),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
     @PostMapping("/register")
     @Operation(summary = "User registration", description = "Registers a new user.")
     @SecurityRequirements() // ❌ Exclude from security
-    public ResponseEntity<ApiResponseDTO> register(
+    public ResponseEntity<ApiResponseDTO<?>> register(
             @Valid @RequestBody UsersRegistrationRequestDTO usersRegistrationRequestDTO,
             BindingResult bindingResult) {
 
         try {
-            ResponseEntity<ErrorResponseDTO> errors = inputValidation.validate(bindingResult);
-            if (errors != null) return new ResponseEntity<>(errors.getBody(), errors.getStatusCode());
+            // Validate Request Body
+            Map<String, String> errors = inputValidation.validate(bindingResult);
+            if (errors != null && !errors.isEmpty()) {
+                return new ResponseEntity<>(
+                        new ApiResponseDTO<>(400, "Validation Error", errors),
+                        HttpStatus.BAD_REQUEST
+                );
+            }
 
-            return new ResponseEntity<>(authService.register(usersRegistrationRequestDTO), HttpStatus.OK);
+            AuthenticationResponseDTO response = authService.register(usersRegistrationRequestDTO);
+
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(201, "Account created successfully", response),
+                    HttpStatus.OK
+            );
         } catch (InternalServerErrorException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .message(e.getMessage())
-                            .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build(),
+                    new ApiResponseDTO<>(500, e.getMessage(), null),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         } catch (UserAlreadyExistsException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .code(HttpStatus.CONFLICT.value())
-                            .message(e.getMessage())
-                            .build(),
+                    new ApiResponseDTO<>(409, e.getMessage(), null),
                     HttpStatus.CONFLICT
             );
         }
@@ -101,26 +117,21 @@ public class AuthenticationController {
     @GetMapping("/reset-password-token")
     @Operation(summary = "Generate Password Reset Token", description = "Generates a reset password token link that is sent to the provided email")
     @SecurityRequirements() // ❌ Exclude from security
-    public ResponseEntity<ApiResponseDTO> resetPasswordToken(@RequestParam String email) {
+    public ResponseEntity<?> resetPasswordToken(@RequestParam String email) {
         try {
-            return new ResponseEntity<>(authService.getPasswordRequestToken(email), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(200, "Password Token sent", authService.getPasswordRequestToken(email)),
+                    HttpStatus.OK
+            );
 
         } catch (BadRequestException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .code(HttpStatus.BAD_REQUEST.value())
-                            .message(e.getMessage())
-                            .build(),
+                    new ApiResponseDTO<>(400, e.getMessage(), null),
                     HttpStatus.BAD_REQUEST
             );
         } catch (InternalServerErrorException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .message(e.getMessage())
-                            .build(),
+                    new ApiResponseDTO<>(500, e.getMessage(), null),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
@@ -129,50 +140,42 @@ public class AuthenticationController {
     @PostMapping("/reset-password")
     @Operation(summary = "Reset User Password", description = "Reset a user's password")
     @SecurityRequirements() // ❌ Exclude from security
-    public ResponseEntity<ApiResponseDTO> resetPassword(
+    public ResponseEntity<ApiResponseDTO<?>> resetPassword(
             @Valid @RequestBody UsersUpdateRequestDTO updateRequestDTO,
             @RequestParam String token,
             BindingResult bindingResult
     ) {
-        ResponseEntity<ErrorResponseDTO> errors = inputValidation.validate(bindingResult);
-        if (errors != null) return new ResponseEntity<>(errors.getBody(), errors.getStatusCode());
+        // Validate Request Body
+        Map<String, String> errors = inputValidation.validate(bindingResult);
+        if (errors != null && !errors.isEmpty()) {
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(400, "Validation Error", errors),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
 
         try {
-            return new ResponseEntity<>(authService.resetPassword(token, updateRequestDTO), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new ApiResponseDTO<>(200, "Password Token sent", authService.resetPassword(token, updateRequestDTO)),
+                    HttpStatus.OK);
         } catch (InternalServerErrorException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .message(e.getMessage())
-                            .build(),
+                    new ApiResponseDTO<>(500, e.getMessage(), null),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         } catch (BadRequestException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .code(HttpStatus.BAD_REQUEST.value())
-                            .message(e.getMessage())
-                            .build(),
+                    new ApiResponseDTO<>(400, e.getMessage(), null),
                     HttpStatus.BAD_REQUEST
             );
         } catch (NotAuthorizedException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .code(HttpStatus.FORBIDDEN.value())
-                            .message(e.getMessage())
-                            .build(),
+                    new ApiResponseDTO<>(401, "Unauthorized", null),
                     HttpStatus.FORBIDDEN
             );
         } catch (NotFoundException e) {
             return new ResponseEntity<>(
-                    ErrorResponseDTO
-                            .builder()
-                            .code(HttpStatus.NOT_FOUND.value())
-                            .message(e.getMessage())
-                            .build(),
+                    new ApiResponseDTO<>(404, e.getMessage(), null),
                     HttpStatus.NOT_FOUND
             );
         }

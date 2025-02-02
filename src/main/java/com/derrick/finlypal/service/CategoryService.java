@@ -1,7 +1,6 @@
 package com.derrick.finlypal.service;
 
 import com.derrick.finlypal.dto.CategoryResponseDTO;
-import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotFoundException;
 import org.springframework.data.domain.Page;
@@ -17,6 +16,4 @@ public interface CategoryService {
     Page<CategoryResponseDTO> getCategoriesByName(String categoryName, int page, int pageSize)
             throws InternalServerErrorException;
 
-    Page<CategoryResponseDTO> getCategoriesByExpenseId(Long expenseId, int page, int pageSize)
-            throws InternalServerErrorException, BadRequestException;
 }

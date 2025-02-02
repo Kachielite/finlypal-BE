@@ -12,7 +12,7 @@ import lombok.Data;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthenticationResponseDTO implements ApiResponseDTO {
+public class AuthenticationResponseDTO extends ApiResponseDTO<AuthenticationResponseDTO> {
     @JsonProperty("access_token")
     private String accessToken;
     @JsonProperty("refresh_token")

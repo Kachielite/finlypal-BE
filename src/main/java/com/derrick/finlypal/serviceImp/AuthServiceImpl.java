@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -78,6 +79,12 @@ public class AuthServiceImpl implements AuthService {
             throws InternalServerErrorException, UserAlreadyExistsException {
         try {
             log.info("Registration request received for the user {}", usersRegistrationRequestDTO.toString());
+
+            // Check if user exists
+            Optional<User> user = userRepository.findByEmail(usersRegistrationRequestDTO.email());
+            if (user.isPresent()) {
+                throw new UserAlreadyExistsException("User already exist with email " + usersRegistrationRequestDTO.email());
+            }
 
             log.info("Creating user");
             User newUser = User
@@ -136,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
                         .build();
 
                 log.info("Successfully refreshed token");
-                new ObjectMapper().writeValue(response.getOutputStream(), responseDTO);
+                new ObjectMapper().writeValue(response.getOutputStream(), new ApiResponseDTO<>(200, "Successfully refreshed token", responseDTO));
             }
 
         } catch (NotFoundException e) {

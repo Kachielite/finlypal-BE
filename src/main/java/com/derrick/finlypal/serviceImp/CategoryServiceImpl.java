@@ -2,7 +2,6 @@ package com.derrick.finlypal.serviceImp;
 
 import com.derrick.finlypal.dto.CategoryResponseDTO;
 import com.derrick.finlypal.entity.Category;
-import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.repository.CategoryRepository;
@@ -31,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
             log.info("Retrieving all categories");
 
             Page<Category> categories = categoryRepository.findAll(pageable);
-            return convertCategoryListToCategoryResponseDTOList(categories, false);
+            return convertCategoryListToCategoryResponseDTOList(categories);
 
         } catch (Exception e) {
             log.error("Error occurred while getting categories", e);
@@ -75,10 +74,10 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             Pageable pageable = PageRequest.of(page, pageSize);
             log.info("Retrieving all categories by name {}", categoryName);
-            Page<Category> categories = categoryRepository.findByNameContaining(categoryName, pageable);
+            Page<Category> categories = categoryRepository.findByDisplayNameContaining(categoryName, pageable);
 
             log.info("Retrieved all categories by name {}", categoryName);
-            return convertCategoryListToCategoryResponseDTOList(categories, false);
+            return convertCategoryListToCategoryResponseDTOList(categories);
 
         } catch (Exception e) {
             log.error("Error occurred while getting categories by name {} ", categoryName, e);
@@ -87,44 +86,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     }
 
-    @Override
-    public Page<CategoryResponseDTO> getCategoriesByExpenseId(Long expenseId, int page, int pageSize)
-            throws InternalServerErrorException, BadRequestException {
-        log.info("Received request to get categories by expense id {} ", expenseId);
-        try {
-            if (expenseId == null || expenseId == 0) {
-                log.info("Received request to get categories by expense id empty");
-                throw new BadRequestException("Expense id is null or empty");
-            }
-
-            Pageable pageable = PageRequest.of(page, pageSize);
-            log.info("Retrieving all categories by expense id {}", expenseId);
-            Page<Category> categories = categoryRepository.findByExpensesId(expenseId, pageable);
-
-            log.info("Retrieved all categories by expense id {}", expenseId);
-            return convertCategoryListToCategoryResponseDTOList(categories, true);
-
-        } catch (BadRequestException e) {
-            log.error("Error occurred while getting categories by expense id {}", expenseId, e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Error occurred while getting categories by expense id {}", expenseId, e);
-            throw new InternalServerErrorException("An error occurred while getting the categories: " + e.getMessage());
-        }
-
-    }
-
     private Page<CategoryResponseDTO> convertCategoryListToCategoryResponseDTOList(
-            Page<Category> categories,
-            boolean includeExpenses) {
+            Page<Category> categories) {
 
         // Convert Page<Category> to Page<CategoryResponseDTO>
         return categories.map(category -> CategoryResponseDTO.builder()
-                .id(includeExpenses ? null : category.getId())
-                .name(includeExpenses ? null : category.getName())
-                .description(includeExpenses ? null : category.getDescription())
-                .displayName(includeExpenses ? null : category.getDisplayName())
-                .expenses(includeExpenses ? category.getExpenses() : null)
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .displayName(category.getDisplayName())
                 .build());
     }
 }

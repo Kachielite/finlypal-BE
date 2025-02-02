@@ -13,8 +13,6 @@ import java.util.Map;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ErrorResponseDTO implements ApiResponseDTO {
-    private String message;
-    private int code;
+public class ErrorResponseDTO extends ApiResponseDTO<ErrorResponseDTO> {
     private Map<String, String> errors;
 }
