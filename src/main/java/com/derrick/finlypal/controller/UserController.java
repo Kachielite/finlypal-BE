@@ -28,15 +28,15 @@ public class UserController {
     private final UsersService usersService;
     private final InputValidation inputValidation;
 
-    @GetMapping("/{userId}")
+    @GetMapping("/{user_id}")
     @Operation(summary = "Get User Details", description = "Fetch current logged in user's details")
-    public ResponseEntity<ApiResponseDTO<?>> getUser(@PathVariable String userId) {
+    public ResponseEntity<ApiResponseDTO<?>> getUser(@PathVariable String user_id) {
         try {
             return new ResponseEntity<>(
                     new ApiResponseDTO<>(
                             200,
                             "Fetched user details successfully",
-                            usersService.getUserDetails(Long.valueOf(userId))
+                            usersService.getUserDetails(Long.valueOf(user_id))
                     ),
                     HttpStatus.OK
             );
@@ -63,12 +63,12 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{userId}")
+    @PutMapping("/{user_id}")
     @Operation(summary = "Update User Details", description = "Update current logged in user's details")
     public ResponseEntity<ApiResponseDTO<?>> updateUserDetail(
             @Valid @RequestBody UsersUpdateRequestDTO userDetailsDTO,
             BindingResult bindingResult,
-            @PathVariable String userId) {
+            @PathVariable String user_id) {
 
         // Validate Request Body
         Map<String, String> errors = inputValidation.validate(bindingResult);
@@ -84,7 +84,7 @@ public class UserController {
                     new ApiResponseDTO<>(
                             200,
                             "Update user details successful",
-                            usersService.updateUserDetails(Long.valueOf(userId), userDetailsDTO)
+                            usersService.updateUserDetails(Long.valueOf(user_id), userDetailsDTO)
                     ),
                     HttpStatus.OK
             );

@@ -37,5 +37,5 @@ public class SwaggerConfiguration {
                 );
     }
 
-    
+
 }
