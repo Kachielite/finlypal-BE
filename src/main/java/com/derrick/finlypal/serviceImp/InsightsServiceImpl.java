@@ -1,6 +1,10 @@
 package com.derrick.finlypal.serviceImp;
 
-import com.derrick.finlypal.dto.InsightsResponseDTO;
+import com.derrick.finlypal.dto.InsightsMonthlyComparisonDTO;
+import com.derrick.finlypal.dto.InsightsSpendByCategoryDTO;
+import com.derrick.finlypal.dto.InsightsSpendTrendsDTO;
+import com.derrick.finlypal.dto.InsightsTopExpensesDTO;
+import com.derrick.finlypal.dto.InsightsTotalSpendDTO;
 import com.derrick.finlypal.enums.ExpenseType;
 import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
@@ -9,11 +13,13 @@ import com.derrick.finlypal.service.InsightsService;
 import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.EnumSet;
@@ -25,15 +31,15 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class InsightsServiceImpl implements InsightsService {
 
-    Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
-    private ExpenseRepository expenseRepository;
+    private final ExpenseRepository expenseRepository;
 
     @Override
-    public InsightsResponseDTO.TotalSpend getTotalSpend(LocalDate startDate, LocalDate endDate, ExpenseType type)
+    public InsightsTotalSpendDTO getTotalSpend(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
 
         log.info("Received request to get total spend");
         try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
 
             // Default to the first day of the current month if startDate is null
             if (startDate == null) {
@@ -49,7 +55,11 @@ public class InsightsServiceImpl implements InsightsService {
                 throw new BadRequestException("Invalid expense type. Must be EXPENSE or INCOME");
             }
 
-            return expenseRepository.findTotalExpenses(userId, startDate, endDate, type);
+            BigDecimal total = expenseRepository.findTotalAmount(userId, startDate, endDate, type);
+            return InsightsTotalSpendDTO
+                    .builder()
+                    .totalSpend(total)
+                    .build();
 
         } catch (BadRequestException e) {
             log.error(e.getMessage());
@@ -61,10 +71,12 @@ public class InsightsServiceImpl implements InsightsService {
     }
 
     @Override
-    public List<InsightsResponseDTO.SpendByCategory> getSpendByCategory(LocalDate startDate, LocalDate endDate, ExpenseType type)
+    public List<InsightsSpendByCategoryDTO> getSpendByCategory(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
         log.info("Received request to get spend by category");
         try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
             if (startDate == null || endDate == null) {
                 throw new BadRequestException("Start date and end date cannot be null");
             }
@@ -73,9 +85,28 @@ public class InsightsServiceImpl implements InsightsService {
                 throw new BadRequestException("Invalid expense type. Must be EXPENSE or INCOME");
             }
 
-            BigDecimal totalAmount = expenseRepository.findTotalExpenses(userId, startDate, endDate, type).getTotalSpend();
+            // Fetch the total amount
+            BigDecimal totalAmount = expenseRepository.findTotalAmount(userId, startDate, endDate, type);
 
-            return expenseRepository.findTotalAmountByCategory(userId, startDate, endDate, type, totalAmount);
+            // Ensure totalAmount is not zero to prevent division by zero
+            BigDecimal total = (totalAmount != null && totalAmount.compareTo(BigDecimal.ZERO) > 0) ? totalAmount : BigDecimal.ONE;
+
+            // Fetch spend by category with placeholder percentage
+            List<InsightsSpendByCategoryDTO> spendByCategoryList =
+                    expenseRepository.findTotalAmountByCategory(userId, startDate, endDate, type);
+
+            // Calculate percentage for each category
+            for (InsightsSpendByCategoryDTO spendByCategory : spendByCategoryList) {
+                BigDecimal percentage = spendByCategory.getTotalSpend()
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(total, 0, RoundingMode.HALF_UP);
+
+                spendByCategory.setPercentage(percentage.intValue());
+            }
+
+            return spendByCategoryList;
+
+
         } catch (BadRequestException e) {
             log.error(e.getMessage());
             throw e;
@@ -86,11 +117,13 @@ public class InsightsServiceImpl implements InsightsService {
     }
 
     @Override
-    public List<InsightsResponseDTO.SpendTrend> getDailyTrend(LocalDate startDate, LocalDate endDate, ExpenseType type)
+    public List<InsightsSpendTrendsDTO> getDailyTrend(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
         log.info("Received request to get daily trend");
 
         try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
             // Set default dates to today if not provided
             if (startDate == null) {
                 startDate = LocalDate.now();
@@ -116,10 +149,11 @@ public class InsightsServiceImpl implements InsightsService {
     }
 
     @Override
-    public List<InsightsResponseDTO.MonthlyComparison> getMonthlyComparison(LocalDate startDate, LocalDate endDate, ExpenseType type)
+    public List<InsightsMonthlyComparisonDTO> getMonthlyComparison(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
         log.info("Received request to get monthly comparison");
         try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
             // Set default dates to the beginning and end of the current year if not provided
             LocalDate now = LocalDate.now();
             if (startDate == null) {
@@ -147,11 +181,12 @@ public class InsightsServiceImpl implements InsightsService {
     }
 
     @Override
-    public List<InsightsResponseDTO.TopExpenses> getTopExpenses(LocalDate startDate, LocalDate endDate, ExpenseType type, int page, int pageSize)
+    public Page<InsightsTopExpensesDTO> getTopExpenses(LocalDate startDate, LocalDate endDate, ExpenseType type, int page, int pageSize)
             throws InternalServerErrorException, BadRequestException {
         log.info("Received request to get top expenses");
         Pageable pageable = PageRequest.of(page, pageSize);
         try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
 
             // Default to the first day of the current month if startDate is null
             if (startDate == null) {
