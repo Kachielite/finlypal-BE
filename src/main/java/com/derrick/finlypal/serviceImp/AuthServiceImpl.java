@@ -1,9 +1,17 @@
 package com.derrick.finlypal.serviceImp;
 
-import com.derrick.finlypal.dto.*;
+import com.derrick.finlypal.dto.ApiResponseDTO;
+import com.derrick.finlypal.dto.AuthenticationRequestDTO;
+import com.derrick.finlypal.dto.AuthenticationResponseDTO;
+import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
+import com.derrick.finlypal.dto.UsersUpdateRequestDTO;
 import com.derrick.finlypal.entity.ResetToken;
 import com.derrick.finlypal.entity.User;
-import com.derrick.finlypal.exception.*;
+import com.derrick.finlypal.exception.BadRequestException;
+import com.derrick.finlypal.exception.InternalServerErrorException;
+import com.derrick.finlypal.exception.NotAuthorizedException;
+import com.derrick.finlypal.exception.NotFoundException;
+import com.derrick.finlypal.exception.UserAlreadyExistsException;
 import com.derrick.finlypal.repository.ResetTokenRepository;
 import com.derrick.finlypal.repository.UserRepository;
 import com.derrick.finlypal.service.AuthService;
@@ -15,7 +23,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,6 +48,18 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final ResetTokenRepository resetTokenRepository;
 
+    /**
+     * Authenticate a user with given email and password. If user is not found,
+     * or credentials are invalid, the respective exceptions are thrown. If any
+     * other error occurs, an InternalServerErrorException is thrown.
+     *
+     * @param authenticationRequestDTO the email and password of the user to be
+     *                                 authenticated
+     * @return an AuthenticationResponseDTO with the access and refresh tokens
+     * @throws InternalServerErrorException if any other error occurs
+     * @throws NotFoundException            if user is not found
+     * @throws BadCredentialsException      if credentials are invalid
+     */
     @Override
     public AuthenticationResponseDTO login(AuthenticationRequestDTO authenticationRequestDTO)
             throws InternalServerErrorException, NotFoundException, BadCredentialsException {
@@ -74,6 +93,14 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Registers a new user in the system.
+     *
+     * @param usersRegistrationRequestDTO the details of the user to be registered
+     * @return an AuthenticationResponseDTO with the access and refresh tokens
+     * @throws InternalServerErrorException if any other error occurs
+     * @throws UserAlreadyExistsException   if user already exists
+     */
     @Override
     public AuthenticationResponseDTO register(UsersRegistrationRequestDTO usersRegistrationRequestDTO)
             throws InternalServerErrorException, UserAlreadyExistsException {
@@ -108,6 +135,19 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Refreshes an access token for a user with a given refresh token. The
+     * refresh token is extracted from the Authorization header of the request.
+     * If the refresh token is invalid, or the user is not found, the respective
+     * exceptions are thrown. If any other error occurs, an
+     * InternalServerErrorException is thrown.
+     *
+     * @param request  the request with the Authorization header containing the
+     *                 refresh token
+     * @param response the response to write the new access and refresh tokens to
+     * @throws InternalServerErrorException if any other error occurs
+     * @throws NotFoundException            if user is not found
+     */
     @Override
     public void refreshToken(HttpServletRequest request, HttpServletResponse response)
             throws NotFoundException, InternalServerErrorException {
@@ -157,8 +197,16 @@ public class AuthServiceImpl implements AuthService {
 
     }
 
+    /**
+     * Generates a password reset token for a user with the given email.
+     *
+     * @param email the email of the user to generate the password reset token for
+     * @return a string indicating that the password reset token has been sent
+     * @throws InternalServerErrorException if any other error occurs
+     * @throws BadRequestException          if the email is not provided or is not a valid
+     */
     @Override
-    public GeneralResponseDTO getPasswordRequestToken(String email)
+    public String getPasswordRequestToken(String email)
             throws InternalServerErrorException, BadRequestException {
 
         try {
@@ -188,11 +236,7 @@ public class AuthServiceImpl implements AuthService {
             log.info("Sending password request token for user with email {}", email);
             emailService.sendEmail(email, subject, body);
 
-            return GeneralResponseDTO
-                    .builder()
-                    .message("Password request token generated")
-                    .status(HttpStatus.OK)
-                    .build();
+            return "Password reset token sent to " + email;
 
         } catch (BadRequestException e) {
             log.error("Email not provided or is not a valid", e);
@@ -203,8 +247,25 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Resets the password for a user using the provided reset token and new password.
+     * <p>
+     * This method performs the following steps:
+     * - Validates the reset token and checks its expiry.
+     * - Finds the user associated with the token.
+     * - Deletes the used or expired reset token.
+     * - Updates the user's password with the new password provided.
+     *
+     * @param resetToken       the token used to authorize the password reset
+     * @param updateRequestDTO the data transfer object containing the new password
+     * @return a string indicating the success of the password reset
+     * @throws InternalServerErrorException if any unknown error occurs during processing
+     * @throws BadRequestException          if the reset token is not found or if the new password is invalid
+     * @throws NotAuthorizedException       if the reset token has expired
+     * @throws NotFoundException            if the email associated with the token is not found
+     */
     @Override
-    public GeneralResponseDTO resetPassword(String resetToken, UsersUpdateRequestDTO updateRequestDTO)
+    public String resetPassword(String resetToken, UsersUpdateRequestDTO updateRequestDTO)
             throws InternalServerErrorException, BadRequestException, NotAuthorizedException, NotFoundException {
         try {
             log.info("Received reset password request");
@@ -236,12 +297,7 @@ public class AuthServiceImpl implements AuthService {
             user.setPassword(passwordEncoder.encode(updateRequestDTO.newPassword()));
             userRepository.save(user);
 
-            return GeneralResponseDTO
-                    .builder()
-                    .message("Password reset successful")
-                    .status(HttpStatus.OK)
-                    .build();
-
+            return "Password reset successfully";
 
         } catch (NotFoundException e) {
             log.error("Email associated with token not found", e);
@@ -258,6 +314,12 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Generates an AuthenticationResponseDTO for a given user.
+     *
+     * @param user user to generate authentication response for
+     * @return AuthenticationResponseDTO containing the access and refresh tokens
+     */
     private AuthenticationResponseDTO generateAuthResponse(User user) {
         String accessToken = jwtUtil.generateAccessToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);

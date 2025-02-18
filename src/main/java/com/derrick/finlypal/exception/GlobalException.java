@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 .apiPath(ex.getMessage())
                 .code(HttpStatus.BAD_REQUEST)
                 .message(ex.getMessage())
-                .timestamp(LocalDate.now())
+                .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -58,7 +58,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 .apiPath(ex.getMessage())
                 .code(HttpStatus.NOT_FOUND)
                 .message(ex.getMessage())
-                .timestamp(LocalDate.now())
+                .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -69,7 +69,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 .apiPath(ex.getMessage())
                 .code(HttpStatus.INTERNAL_SERVER_ERROR)
                 .message(ex.getMessage())
-                .timestamp(LocalDate.now())
+                .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -80,7 +80,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 .apiPath(ex.getMessage())
                 .code(HttpStatus.BAD_REQUEST)
                 .message(ex.getMessage())
-                .timestamp(LocalDate.now())
+                .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -91,7 +91,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 .apiPath(ex.getMessage())
                 .code(HttpStatus.FORBIDDEN)
                 .message(ex.getMessage())
-                .timestamp(LocalDate.now())
+                .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
