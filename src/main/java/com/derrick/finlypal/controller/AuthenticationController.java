@@ -36,7 +36,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "User authentication and registration APIs")
+@Tag(
+        name = "Authentication",
+        description = "APIs related to user authentication and registration, including login, logout, and account creation"
+)
 public class AuthenticationController {
 
     private final AuthService authService;

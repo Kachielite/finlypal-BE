@@ -26,6 +26,29 @@ public class UsersServiceImpl implements UsersService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Retrieves the user details associated with the given {@code userId}.
+     * <p>
+     * This method performs the following steps:
+     * - Validates the {@code userId} and checks if the user is authorized.
+     * - Retrieves the user details associated with the given {@code userId}.
+     * - Returns a {@link UsersResponseDTO} containing the user details.
+     * <p>
+     * If the {@code userId} is null, it throws a {@link BadRequestException}.
+     * If the user is not found with the given {@code userId}, it throws a
+     * {@link NotFoundException}.
+     * If the user is not authorized to access the user details, it throws a
+     * {@link NotAuthorizedException}.
+     * If any other unexpected error occurs, it throws an
+     * {@link InternalServerErrorException}.
+     *
+     * @param userId the id of the user to retrieve details for
+     * @return a {@link UsersResponseDTO} containing the user details
+     * @throws InternalServerErrorException if any unexpected error occurs
+     * @throws BadRequestException          if the request is invalid
+     * @throws NotFoundException            if the user is not found
+     * @throws NotAuthorizedException       if the user is not authorized
+     */
     @Override
     public UsersResponseDTO getUserDetails(Long userId)
             throws NotFoundException, InternalServerErrorException, NotAuthorizedException, BadRequestException {
@@ -60,6 +83,17 @@ public class UsersServiceImpl implements UsersService {
         }
     }
 
+    /**
+     * Updates the user details for a given user id.
+     *
+     * @param userId           the id of the user to be updated
+     * @param updateRequestDTO the {@link UsersUpdateRequestDTO} containing the new user details
+     * @return a {@link GeneralResponseDTO} indicating the status of the request
+     * @throws NotFoundException            if the user is not found
+     * @throws InternalServerErrorException if any unexpected error occurs
+     * @throws NotAuthorizedException       if the user is not authorized
+     * @throws BadRequestException          if the request is invalid
+     */
     @Override
     public GeneralResponseDTO updateUserDetails(Long userId, UsersUpdateRequestDTO updateRequestDTO)
             throws NotFoundException, InternalServerErrorException, NotAuthorizedException, BadRequestException {

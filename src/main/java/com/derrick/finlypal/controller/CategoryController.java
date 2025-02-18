@@ -23,7 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/categories")
-@Tag(name = "Category", description = "Manage expense categories")
+@Tag(
+        name = "Category",
+        description = """
+                Manage expense categories. 
+                This endpoint provides functionalities to interact with expense categories. 
+                You can use the endpoints to list and search categories. 
+                """
+)
 @RequiredArgsConstructor
 public class CategoryController {
 

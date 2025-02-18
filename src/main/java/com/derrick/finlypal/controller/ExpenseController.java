@@ -37,7 +37,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/expenses")
-@Tag(name = "Expenses", description = "Manage user's expenses")
+@Tag(
+        name = "Expenses",
+        description = "Manage user's expenses, including creating, reading, updating, and deleting. This endpoint group provides operations to manipulate expenses, including retrieval of expense details, updating expense information, and deleting expenses."
+)
 @RequiredArgsConstructor
 public class ExpenseController {
 
