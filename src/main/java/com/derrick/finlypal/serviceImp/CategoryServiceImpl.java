@@ -21,6 +21,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Gets all categories.
+     *
+     * @param page     the page number to retrieve. Starts from 0.
+     * @param pageSize the number of items per page.
+     * @return a page of {@link CategoryResponseDTO}
+     * @throws InternalServerErrorException if an error occurs while retrieving the categories.
+     */
     @Override
     public Page<CategoryResponseDTO> getAllCategories(int page, int pageSize)
             throws InternalServerErrorException {
@@ -38,6 +46,14 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
+    /**
+     * Retrieves a category by id.
+     *
+     * @param id the id of the category to retrieve
+     * @return the category
+     * @throws NotFoundException            if the category is not found
+     * @throws InternalServerErrorException if an error occurs while retrieving the category
+     */
     @Override
     public CategoryResponseDTO getCategoryById(Long id)
             throws NotFoundException, InternalServerErrorException {
@@ -65,6 +81,15 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
+    /**
+     * Retrieves a page of categories by name.
+     *
+     * @param categoryName the name of the category to search for
+     * @param page         the page number of the result (default: 0)
+     * @param pageSize     the number of items per page (default: 10)
+     * @return a page of categories
+     * @throws InternalServerErrorException if an error occurs while retrieving the categories
+     */
     @Override
     public Page<CategoryResponseDTO> getCategoriesByName(String categoryName, int page, int pageSize)
             throws InternalServerErrorException {
@@ -86,6 +111,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     }
 
+    /**
+     * Converts a page of categories to a page of category response DTOs.
+     *
+     * @param categories the page of categories to convert
+     * @return a page of category response DTOs
+     */
     private Page<CategoryResponseDTO> convertCategoryListToCategoryResponseDTOList(
             Page<Category> categories) {
 
