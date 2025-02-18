@@ -33,6 +33,20 @@ public class InsightsServiceImpl implements InsightsService {
 
     private final ExpenseRepository expenseRepository;
 
+    /**
+     * Returns the total spend between the given start date and end date for the given expense type.
+     * If startDate is null, it defaults to the first day of the current month.
+     * If endDate is null, it defaults to today.
+     * If type is not {@link ExpenseType#EXPENSE} or {@link ExpenseType#INCOME}, it throws a
+     * {@link BadRequestException}.
+     *
+     * @param startDate the start date of the range, inclusive
+     * @param endDate   the end date of the range, inclusive
+     * @param type      the type of expense
+     * @return a {@link InsightsTotalSpendDTO} containing the total spend
+     * @throws InternalServerErrorException if an unexpected error occurs
+     * @throws BadRequestException          if the request is invalid
+     */
     @Override
     public InsightsTotalSpendDTO getTotalSpend(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
@@ -70,6 +84,22 @@ public class InsightsServiceImpl implements InsightsService {
         }
     }
 
+    /**
+     * Retrieves the user's spend by category within the specified date range and for a specific expense type.
+     * If the start date or end date is null, it throws a {@link BadRequestException}.
+     * If the type is not {@link ExpenseType#EXPENSE} or {@link ExpenseType#INCOME}, it throws a
+     * {@link BadRequestException}.
+     * It calculates the total spend for each category and computes the percentage share of each category
+     * relative to the total spend.
+     *
+     * @param startDate the start date of the range, inclusive
+     * @param endDate   the end date of the range, inclusive
+     * @param type      the type of expense
+     * @return a list of {@link InsightsSpendByCategoryDTO} containing spend details by category,
+     * including the percentage of total spend for each category
+     * @throws InternalServerErrorException if an unexpected error occurs
+     * @throws BadRequestException          if the request is invalid
+     */
     @Override
     public List<InsightsSpendByCategoryDTO> getSpendByCategory(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
@@ -116,6 +146,19 @@ public class InsightsServiceImpl implements InsightsService {
         }
     }
 
+    /**
+     * Retrieves the user's spend by day within the specified date range and for a specific expense type.
+     * If the start date or end date is null, it defaults to today.
+     * If the type is not {@link ExpenseType#EXPENSE} or {@link ExpenseType#INCOME}, it throws a
+     * {@link BadRequestException}.
+     *
+     * @param startDate the start date of the range, inclusive
+     * @param endDate   the end date of the range, inclusive
+     * @param type      the type of expense
+     * @return a list of {@link InsightsSpendTrendsDTO} containing spend details by day
+     * @throws InternalServerErrorException if an unexpected error occurs
+     * @throws BadRequestException          if the request is invalid
+     */
     @Override
     public List<InsightsSpendTrendsDTO> getDailyTrend(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
@@ -148,6 +191,21 @@ public class InsightsServiceImpl implements InsightsService {
         }
     }
 
+    /**
+     * Retrieves the user's spend by month for the given date range and for a specific expense type.
+     * If the start date or end date is null, it defaults to the first day and last day of the current year, respectively.
+     * If the type is not {@link ExpenseType#EXPENSE} or {@link ExpenseType#INCOME}, it throws a
+     * {@link BadRequestException}.
+     * It calculates the total spend for each month and computes the percentage share of each month
+     * relative to the total spend for the given date range.
+     *
+     * @param startDate the start date of the range, inclusive
+     * @param endDate   the end date of the range, inclusive
+     * @param type      the type of expense
+     * @return a list of {@link InsightsMonthlyComparisonDTO} containing spend details by month
+     * @throws InternalServerErrorException if an unexpected error occurs
+     * @throws BadRequestException          if the request is invalid
+     */
     @Override
     public List<InsightsMonthlyComparisonDTO> getMonthlyComparison(LocalDate startDate, LocalDate endDate, ExpenseType type)
             throws InternalServerErrorException, BadRequestException {
