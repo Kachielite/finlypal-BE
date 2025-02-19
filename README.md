@@ -2,6 +2,10 @@
 
 FinlyPal is an AI-powered expense tracking app that helps users manage their finances, analyze spending habits, and receive personalized recommendations for saving money. Built with **Spring Boot** for the backend and **Flutter** for the frontend, SpendWise combines simplicity with powerful AI-driven insights.
 
+## API Documentation (MVP)
+
+Access the full API documentation on Swagger UI: [here]([https://digi-purse.onrender.com/docs](https://finlypal.onrender.com/api/v1/swagger-ui/index.html))
+
 ---
 
 ## Features
