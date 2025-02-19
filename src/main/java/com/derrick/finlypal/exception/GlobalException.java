@@ -42,9 +42,9 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponseDTO> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+    public ResponseEntity<ErrorResponseDTO> handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request) {
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
-                .apiPath(ex.getMessage())
+                .apiPath(request.getDescription(false))
                 .code(HttpStatus.BAD_REQUEST)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -53,9 +53,9 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleNotFoundException(NotFoundException ex) {
+    public ResponseEntity<ErrorResponseDTO> handleNotFoundException(NotFoundException ex, WebRequest request) {
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
-                .apiPath(ex.getMessage())
+                .apiPath(request.getDescription(false))
                 .code(HttpStatus.NOT_FOUND)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -64,9 +64,9 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(InternalServerErrorException.class)
-    public ResponseEntity<ErrorResponseDTO> handleInternalServerErrorException(InternalServerErrorException ex) {
+    public ResponseEntity<ErrorResponseDTO> handleInternalServerErrorException(InternalServerErrorException ex, WebRequest request) {
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
-                .apiPath(ex.getMessage())
+                .apiPath(request.getDescription(false))
                 .code(HttpStatus.INTERNAL_SERVER_ERROR)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -75,9 +75,9 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponseDTO> handleBadRequestException(BadRequestException ex) {
+    public ResponseEntity<ErrorResponseDTO> handleBadRequestException(BadRequestException ex, WebRequest request) {
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
-                .apiPath(ex.getMessage())
+                .apiPath(request.getDescription(false))
                 .code(HttpStatus.BAD_REQUEST)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -86,9 +86,20 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(NotAuthorizedException.class)
-    public ResponseEntity<ErrorResponseDTO> handleNotAuthorizedException(NotAuthorizedException ex) {
+    public ResponseEntity<ErrorResponseDTO> handleNotAuthorizedException(NotAuthorizedException ex, WebRequest request) {
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
-                .apiPath(ex.getMessage())
+                .apiPath(request.getDescription(false))
+                .code(HttpStatus.FORBIDDEN)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(JwtAuthenticationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleJwtAuthenticationException(JwtAuthenticationException ex, WebRequest request) {
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .apiPath(request.getDescription(false))
                 .code(HttpStatus.FORBIDDEN)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())

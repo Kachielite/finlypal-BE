@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -72,7 +71,6 @@ public class InsightsController {
     public ResponseEntity<InsightsTotalSpendDTO> totalSpend(
             @RequestParam(required = false) LocalDate start_date,
             @RequestParam(required = false) LocalDate end_date,
-            @NotEmpty(message = "Expense type cannot be empty")
             @RequestParam ExpenseType type
     ) throws InternalServerErrorException, BadRequestException {
         return new ResponseEntity<>(
@@ -114,7 +112,6 @@ public class InsightsController {
     public ResponseEntity<List<InsightsSpendByCategoryDTO>> totalSpendByCategory(
             @RequestParam LocalDate start_date,
             @RequestParam LocalDate end_date,
-            @NotEmpty(message = "Expense type cannot be empty")
             @RequestParam ExpenseType type
     ) throws InternalServerErrorException, BadRequestException {
         return new ResponseEntity<>(
@@ -154,7 +151,6 @@ public class InsightsController {
     public ResponseEntity<List<InsightsSpendTrendsDTO>> dailySpend(
             @RequestParam(required = false) LocalDate start_date,
             @RequestParam(required = false) LocalDate end_date,
-            @NotEmpty(message = "Expense type cannot be empty")
             @RequestParam ExpenseType type
     ) throws InternalServerErrorException, BadRequestException {
         return new ResponseEntity<>(
@@ -179,7 +175,6 @@ public class InsightsController {
     public ResponseEntity<Page<InsightsTopExpensesDTO>> topExpenses(
             @RequestParam(required = false) LocalDate start_date,
             @RequestParam(required = false) LocalDate end_date,
-            @NotEmpty(message = "Expense type cannot be empty")
             @RequestParam ExpenseType type,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize
@@ -220,7 +215,6 @@ public class InsightsController {
     public ResponseEntity<List<InsightsMonthlyComparisonDTO>> monthlySpend(
             @RequestParam(required = false) LocalDate start_date,
             @RequestParam(required = false) LocalDate end_date,
-            @NotEmpty(message = "Expense type cannot be empty")
             @RequestParam ExpenseType type
     ) throws InternalServerErrorException, BadRequestException {
         return new ResponseEntity<>(
