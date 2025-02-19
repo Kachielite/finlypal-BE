@@ -7,13 +7,12 @@ import org.springframework.data.domain.Page;
 
 public interface CategoryService {
 
-    Page<CategoryResponseDTO> getAllCategories(int page, int pageSize)
-            throws InternalServerErrorException;
+  Page<CategoryResponseDTO> getAllCategories(int page, int pageSize)
+      throws InternalServerErrorException;
 
-    CategoryResponseDTO getCategoryById(Long id)
-            throws NotFoundException, InternalServerErrorException;
+  CategoryResponseDTO getCategoryById(Long id)
+      throws NotFoundException, InternalServerErrorException;
 
-    Page<CategoryResponseDTO> getCategoriesByName(String categoryName, int page, int pageSize)
-            throws InternalServerErrorException;
-
+  Page<CategoryResponseDTO> getCategoriesByName(String categoryName, int page, int pageSize)
+      throws InternalServerErrorException;
 }

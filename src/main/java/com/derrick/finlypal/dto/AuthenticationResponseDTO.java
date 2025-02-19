@@ -13,14 +13,16 @@ import lombok.Data;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Schema(name = "AuthenticationResponse", description = "Holds the authentication response which includes access token and refresh token")
+@Schema(
+    name = "AuthenticationResponse",
+    description = "Holds the authentication response which includes access token and refresh token")
 public class AuthenticationResponseDTO {
 
-    @Schema(description = "Access token", example = "eJDDJDSMDLSDOINDSJNDAODNSODINASDKASDSAD")
-    @JsonProperty("access_token")
-    private String accessToken;
+  @Schema(description = "Access token", example = "eJDDJDSMDLSDOINDSJNDAODNSODINASDKASDSAD")
+  @JsonProperty("access_token")
+  private String accessToken;
 
-    @Schema(description = "Refresh token", example = "eJDDJDSMDLSDOINDSJNDAODNSODINASDKASDSAD")
-    @JsonProperty("refresh_token")
-    private String refreshToken;
+  @Schema(description = "Refresh token", example = "eJDDJDSMDLSDOINDSJNDAODNSODINASDKASDSAD")
+  @JsonProperty("refresh_token")
+  private String refreshToken;
 }

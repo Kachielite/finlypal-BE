@@ -1,11 +1,10 @@
 package com.derrick.finlypal.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Setter
@@ -15,16 +14,15 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reset_tokens")
 public class ResetToken {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Integer id;
 
-    private String token;
-    private String email;
-    private LocalDateTime expiryDate;
+  private String token;
+  private String email;
+  private LocalDateTime expiryDate;
 
-    @CreationTimestamp
-    @Column(name = "created_at")
-    private Timestamp createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at")
+  private Timestamp createdAt;
 }
-

@@ -22,128 +22,133 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UsersServiceImpl implements UsersService {
 
-    private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
-    private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final JwtUtil jwtUtil;
+  private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Retrieves the user details associated with the given {@code userId}.
-     * <p>
-     * This method performs the following steps:
-     * - Validates the {@code userId} and checks if the user is authorized.
-     * - Retrieves the user details associated with the given {@code userId}.
-     * - Returns a {@link UsersResponseDTO} containing the user details.
-     * <p>
-     * If the {@code userId} is null, it throws a {@link BadRequestException}.
-     * If the user is not found with the given {@code userId}, it throws a
-     * {@link NotFoundException}.
-     * If the user is not authorized to access the user details, it throws a
-     * {@link NotAuthorizedException}.
-     * If any other unexpected error occurs, it throws an
-     * {@link InternalServerErrorException}.
-     *
-     * @param userId the id of the user to retrieve details for
-     * @return a {@link UsersResponseDTO} containing the user details
-     * @throws InternalServerErrorException if any unexpected error occurs
-     * @throws BadRequestException          if the request is invalid
-     * @throws NotFoundException            if the user is not found
-     * @throws NotAuthorizedException       if the user is not authorized
-     */
-    @Override
-    public UsersResponseDTO getUserDetails(Long userId)
-            throws NotFoundException, InternalServerErrorException, NotAuthorizedException, BadRequestException {
+  /**
+   * Retrieves the user details associated with the given {@code userId}.
+   *
+   * <p>This method performs the following steps: - Validates the {@code userId} and checks if the
+   * user is authorized. - Retrieves the user details associated with the given {@code userId}. -
+   * Returns a {@link UsersResponseDTO} containing the user details.
+   *
+   * <p>If the {@code userId} is null, it throws a {@link BadRequestException}. If the user is not
+   * found with the given {@code userId}, it throws a {@link NotFoundException}. If the user is not
+   * authorized to access the user details, it throws a {@link NotAuthorizedException}. If any other
+   * unexpected error occurs, it throws an {@link InternalServerErrorException}.
+   *
+   * @param userId the id of the user to retrieve details for
+   * @return a {@link UsersResponseDTO} containing the user details
+   * @throws InternalServerErrorException if any unexpected error occurs
+   * @throws BadRequestException if the request is invalid
+   * @throws NotFoundException if the user is not found
+   * @throws NotAuthorizedException if the user is not authorized
+   */
+  @Override
+  public UsersResponseDTO getUserDetails(Long userId)
+      throws NotFoundException,
+          InternalServerErrorException,
+          NotAuthorizedException,
+          BadRequestException {
 
-        try {
-            if (userId == null) {
-                throw new BadRequestException("userId is null");
-            }
-            log.info("Received request to get user details for {}", userId);
-            User user = validateUserAccess(userId);
+    try {
+      if (userId == null) {
+        throw new BadRequestException("userId is null");
+      }
+      log.info("Received request to get user details for {}", userId);
+      User user = validateUserAccess(userId);
 
-            log.info("User details found for user {}", userId);
-            return UsersResponseDTO
-                    .builder()
-                    .id(user.getId())
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .build();
+      log.info("User details found for user {}", userId);
+      return UsersResponseDTO.builder()
+          .id(user.getId())
+          .email(user.getEmail())
+          .name(user.getName())
+          .build();
 
-        } catch (BadRequestException e) {
-            log.error("userId is null", e);
-            throw e;
-        } catch (NotFoundException e) {
-            log.error("User not found for user", e);
-            throw e;
-        } catch (NotAuthorizedException e) {
-            log.error("User not authorized for user", e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Error while getting user details", e);
-            throw new InternalServerErrorException("An internal server error occurred: " + e.getMessage());
+    } catch (BadRequestException e) {
+      log.error("userId is null", e);
+      throw e;
+    } catch (NotFoundException e) {
+      log.error("User not found for user", e);
+      throw e;
+    } catch (NotAuthorizedException e) {
+      log.error("User not authorized for user", e);
+      throw e;
+    } catch (Exception e) {
+      log.error("Error while getting user details", e);
+      throw new InternalServerErrorException(
+          "An internal server error occurred: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Updates the user details for a given user id.
+   *
+   * @param userId the id of the user to be updated
+   * @param updateRequestDTO the {@link UsersUpdateRequestDTO} containing the new user details
+   * @return a {@link GeneralResponseDTO} indicating the status of the request
+   * @throws NotFoundException if the user is not found
+   * @throws InternalServerErrorException if any unexpected error occurs
+   * @throws NotAuthorizedException if the user is not authorized
+   * @throws BadRequestException if the request is invalid
+   */
+  @Override
+  public GeneralResponseDTO updateUserDetails(Long userId, UsersUpdateRequestDTO updateRequestDTO)
+      throws NotFoundException,
+          InternalServerErrorException,
+          NotAuthorizedException,
+          BadRequestException {
+    try {
+      log.info("Received request to update user details for {}", userId);
+      User user = validateUserAccess(userId);
+
+      if (updateRequestDTO.name() != null) {
+        user.setName(updateRequestDTO.name());
+      }
+
+      if (updateRequestDTO.oldPassword() != null || updateRequestDTO.newPassword() != null) {
+        if (!passwordEncoder.matches(updateRequestDTO.oldPassword(), user.getPassword())) {
+          throw new BadRequestException("Old password does not match");
         }
+
+        user.setPassword(passwordEncoder.encode(updateRequestDTO.newPassword()));
+      }
+
+      log.info("Updating details for user with id {}", userId);
+      userRepository.save(user);
+
+      return GeneralResponseDTO.builder()
+          .status(HttpStatus.OK)
+          .message("User details updated successfully")
+          .build();
+
+    } catch (NotFoundException e) {
+      log.error("User not found for user {}", userId, e);
+      throw e;
+    } catch (NotAuthorizedException e) {
+      log.error("User not authorized for user {}", userId, e);
+      throw e;
+    } catch (BadRequestException e) {
+      log.error("Password updated failed {}", userId);
+      throw e;
+    } catch (Exception e) {
+      log.error("Error while getting user details", e);
+      throw new InternalServerErrorException(
+          "An internal server error occurred: " + e.getMessage());
     }
+  }
 
-    /**
-     * Updates the user details for a given user id.
-     *
-     * @param userId           the id of the user to be updated
-     * @param updateRequestDTO the {@link UsersUpdateRequestDTO} containing the new user details
-     * @return a {@link GeneralResponseDTO} indicating the status of the request
-     * @throws NotFoundException            if the user is not found
-     * @throws InternalServerErrorException if any unexpected error occurs
-     * @throws NotAuthorizedException       if the user is not authorized
-     * @throws BadRequestException          if the request is invalid
-     */
-    @Override
-    public GeneralResponseDTO updateUserDetails(Long userId, UsersUpdateRequestDTO updateRequestDTO)
-            throws NotFoundException, InternalServerErrorException, NotAuthorizedException, BadRequestException {
-        try {
-            log.info("Received request to update user details for {}", userId);
-            User user = validateUserAccess(userId);
+  private User validateUserAccess(Long userId) throws NotAuthorizedException, NotFoundException {
+    log.info("Getting user details for {}", userId);
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
 
-            if (updateRequestDTO.name() != null) {
-                user.setName(updateRequestDTO.name());
-            }
+    log.info("Validating access for user {}", userId);
+    jwtUtil.validateUserAccess(user.getUsername());
 
-            if (updateRequestDTO.oldPassword() != null || updateRequestDTO.newPassword() != null) {
-                if (!passwordEncoder.matches(updateRequestDTO.oldPassword(), user.getPassword())) {
-                    throw new BadRequestException("Old password does not match");
-                }
-
-                user.setPassword(passwordEncoder.encode(updateRequestDTO.newPassword()));
-            }
-
-            log.info("Updating details for user with id {}", userId);
-            userRepository.save(user);
-
-            return GeneralResponseDTO
-                    .builder()
-                    .status(HttpStatus.OK)
-                    .message("User details updated successfully")
-                    .build();
-
-        } catch (NotFoundException e) {
-            log.error("User not found for user {}", userId, e);
-            throw e;
-        } catch (NotAuthorizedException e) {
-            log.error("User not authorized for user {}", userId, e);
-            throw e;
-        } catch (BadRequestException e) {
-            log.error("Password updated failed {}", userId);
-            throw e;
-        } catch (Exception e) {
-            log.error("Error while getting user details", e);
-            throw new InternalServerErrorException("An internal server error occurred: " + e.getMessage());
-        }
-    }
-
-    private User validateUserAccess(Long userId) throws NotAuthorizedException, NotFoundException {
-        log.info("Getting user details for {}", userId);
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
-
-        log.info("Validating access for user {}", userId);
-        jwtUtil.validateUserAccess(user.getUsername());
-
-        return user;
-    }
+    return user;
+  }
 }

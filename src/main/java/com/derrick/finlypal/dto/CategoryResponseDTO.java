@@ -16,16 +16,16 @@ import lombok.Data;
 @Schema(name = "CategoryResponse", description = "Holds information about a category")
 public class CategoryResponseDTO {
 
-    @Schema(description = "Id of category", example = "1")
-    private Long id;
+  @Schema(description = "Id of category", example = "1")
+  private Long id;
 
-    @Schema(description = "Name of category", example = "Groceries")
-    private String name;
+  @Schema(description = "Name of category", example = "Groceries")
+  private String name;
 
-    @Schema(description = "Display name of category", example = "Groceries")
-    @JsonProperty("display_name")
-    private String displayName;
+  @Schema(description = "Display name of category", example = "Groceries")
+  @JsonProperty("display_name")
+  private String displayName;
 
-    @Schema(description = "Description of category", example = "Groceries")
-    private String description;
+  @Schema(description = "Description of category", example = "Groceries")
+  private String description;
 }

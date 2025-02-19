@@ -13,10 +13,9 @@ import org.springframework.http.HttpStatus;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "GeneralResponse", description = "Holds the general response")
 public class GeneralResponseDTO {
-    @Schema(description = "Status code", example = "200")
-    private HttpStatus status;
+  @Schema(description = "Status code", example = "200")
+  private HttpStatus status;
 
-    @Schema(description = "Message", example = "Successful Operation")
-    private String message;
-
+  @Schema(description = "Message", example = "Successful Operation")
+  private String message;
 }

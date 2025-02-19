@@ -14,18 +14,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 
 public interface AuthService {
-    AuthenticationResponseDTO login(AuthenticationRequestDTO authenticationRequestDTO)
-            throws InternalServerErrorException, NotFoundException, BadCredentialsException;
+  AuthenticationResponseDTO login(AuthenticationRequestDTO authenticationRequestDTO)
+      throws InternalServerErrorException, NotFoundException, BadCredentialsException;
 
-    AuthenticationResponseDTO register(UsersRegistrationRequestDTO usersRegistrationRequestDTO)
-            throws UserAlreadyExistsException, InternalServerErrorException;
+  AuthenticationResponseDTO register(UsersRegistrationRequestDTO usersRegistrationRequestDTO)
+      throws UserAlreadyExistsException, InternalServerErrorException;
 
-    void refreshToken(HttpServletRequest request, HttpServletResponse response)
-            throws NotFoundException, InternalServerErrorException;
+  void refreshToken(HttpServletRequest request, HttpServletResponse response)
+      throws NotFoundException, InternalServerErrorException;
 
-    String getPasswordRequestToken(String email)
-            throws InternalServerErrorException, BadRequestException;
+  String getPasswordRequestToken(String email)
+      throws InternalServerErrorException, BadRequestException;
 
-    String resetPassword(String token, UsersUpdateRequestDTO usersUpdateRequestDTO)
-            throws InternalServerErrorException, BadRequestException, NotAuthorizedException, NotFoundException;
+  String resetPassword(String token, UsersUpdateRequestDTO usersUpdateRequestDTO)
+      throws InternalServerErrorException,
+          BadRequestException,
+          NotAuthorizedException,
+          NotFoundException;
 }
