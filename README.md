@@ -4,7 +4,7 @@ FinlyPal is an AI-powered expense tracking app that helps users manage their fin
 
 ## API Documentation (MVP)
 
-Access the full API documentation on Swagger UI: [here]([https://digi-purse.onrender.com/docs](https://finlypal.onrender.com/api/v1/swagger-ui/index.html))
+Access the full API documentation on Swagger UI: [here](https://finlypal.onrender.com/api/v1/swagger-ui/index.html)
 
 ---
 
