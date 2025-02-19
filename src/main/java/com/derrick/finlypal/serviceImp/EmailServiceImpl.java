@@ -14,25 +14,26 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-    private final JavaMailSender javaMailSender;
+  private final JavaMailSender javaMailSender;
 
-    @Override
-    public void sendEmail(String to, String subject, String body) throws InternalServerErrorException {
-        SimpleMailMessage message = new SimpleMailMessage();
+  @Override
+  public void sendEmail(String to, String subject, String body)
+      throws InternalServerErrorException {
+    SimpleMailMessage message = new SimpleMailMessage();
 
-        try {
-            log.info("Received request to send email to {}", to);
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(body);
+    try {
+      log.info("Received request to send email to {}", to);
+      message.setTo(to);
+      message.setSubject(subject);
+      message.setText(body);
 
-            log.info("Sending email to {}", to);
-            javaMailSender.send(message);
-            log.info("Email sent to {}", to);
-        } catch (MailException e) {
-            log.error("Failed to send email to {}", to, e);
-            throw new InternalServerErrorException("An error occurred while sending email to " + e.getMessage());
-        }
-
+      log.info("Sending email to {}", to);
+      javaMailSender.send(message);
+      log.info("Email sent to {}", to);
+    } catch (MailException e) {
+      log.error("Failed to send email to {}", to, e);
+      throw new InternalServerErrorException(
+          "An error occurred while sending email to " + e.getMessage());
     }
+  }
 }

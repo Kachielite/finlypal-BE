@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Access Denied")
 public class NotAuthorizedException extends Exception {
-    public NotAuthorizedException(String message) {
-        super(message);
-    }
+  public NotAuthorizedException(String message) {
+    super(message);
+  }
 }
