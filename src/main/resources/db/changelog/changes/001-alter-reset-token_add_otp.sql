@@ -1,3 +1,3 @@
 -- Add otp column to ResetToken table
-ALTER TABLE ResetToken
+ALTER TABLE reset_tokens
     ADD COLUMN otp VARCHAR(255);

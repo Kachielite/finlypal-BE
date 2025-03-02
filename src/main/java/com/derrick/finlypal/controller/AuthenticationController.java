@@ -4,6 +4,7 @@ import com.derrick.finlypal.dto.AuthenticationRequestDTO;
 import com.derrick.finlypal.dto.AuthenticationResponseDTO;
 import com.derrick.finlypal.dto.ErrorResponseDTO;
 import com.derrick.finlypal.dto.GeneralResponseDTO;
+import com.derrick.finlypal.dto.OtpRequestDTO;
 import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
 import com.derrick.finlypal.dto.UsersUpdateRequestDTO;
 import com.derrick.finlypal.exception.BadRequestException;
@@ -110,12 +111,12 @@ public class AuthenticationController {
       summary = "Refresh Access Token",
       description =
           """
-                    Refresh user's authentication access token. This endpoint is used to
-                    refresh the user's access token when the current one has expired.
-                    The endpoint requires the user to have a valid refresh token.
-                    The refresh token is sent via the Authorization header.
-                    The response contains the new access and refresh tokens.
-                    """)
+                            Refresh user's authentication access token. This endpoint is used to
+                            refresh the user's access token when the current one has expired.
+                            The endpoint requires the user to have a valid refresh token.
+                            The refresh token is sent via the Authorization header.
+                            The response contains the new access and refresh tokens.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Access token refreshed successfully"),
     @ApiResponse(
@@ -142,11 +143,11 @@ public class AuthenticationController {
       summary = "Generate Reset Password Token",
       description =
           """
-                    Generates a reset password token link that is sent to the provided email.
-                    The token is valid for 3 hours and can be used to reset the user's password.
-                    The endpoint requires the user to have a valid email address.
-                    The response contains a message indicating that the password reset token has been sent.
-                    """)
+                            Generates a reset password token link that is sent to the provided email.
+                            The token is valid for 3 hours and can be used to reset the user's password.
+                            The endpoint requires the user to have a valid email address.
+                            The response contains a message indicating that the password reset token has been sent.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Password reset token generated successfully"),
     @ApiResponse(
@@ -180,11 +181,11 @@ public class AuthenticationController {
       summary = "Reset User Password",
       description =
           """
-                    Resets a user's password. The user needs to provide a valid reset token and new password.
-                    The reset token is valid for 3 hours and can be used only once.
-                    The new password must be at least.
-                    The user will receive an email notification with the new password once the password has been reset.
-                    """)
+                            Resets a user's password. The user needs to provide a valid reset token and new password.
+                            The reset token is valid for 3 hours and can be used only once.
+                            The new password must be at least.
+                            The user will receive an email notification with the new password once the password has been reset.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Update user information successfully"),
     @ApiResponse(
@@ -214,6 +215,71 @@ public class AuthenticationController {
 
     return new ResponseEntity<>(
         new GeneralResponseDTO(HttpStatus.OK, authService.resetPassword(token, updateRequestDTO)),
+        HttpStatus.OK);
+  }
+
+  @SecurityRequirements()
+  @Operation(
+      summary = "Generate Reset Password Otp",
+      description =
+          """
+                            Generates a reset password OTP that is sent to the provided email.
+                            The OTP is valid for 10 minutes and can be used to reset the user's password.
+                            The endpoint requires the user to have a valid email address.
+                            The response contains a message indicating that the password reset otp has been sent.
+                            """)
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "OTP sent successfully"),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Bad request",
+        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+    @ApiResponse(
+        responseCode = "500",
+        description = "Internal server error",
+        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+  })
+  @GetMapping("/reset-password-otp")
+  public ResponseEntity<GeneralResponseDTO> resetPasswordOtp(
+      @Email(message = "Email must be a valid email address")
+          @NotEmpty(message = "Email cannot be empty")
+          @RequestParam
+          String email)
+      throws InternalServerErrorException, BadRequestException {
+
+    return new ResponseEntity<>(
+        new GeneralResponseDTO(HttpStatus.OK, authService.getPasswordResetOtp(email)),
+        HttpStatus.OK);
+  }
+
+  @PostMapping("verify-otp")
+  @SecurityRequirements()
+  @Operation(
+      summary = "Verify OTP",
+      description =
+          """
+                            This verifies the reset otp to be sure it is valid and not expired.
+                            The OTP is verified by checking if it exists in the database,
+                            if it is valid (i.e. not expired) and if it matches the one sent to the user.
+                            If the OTP is valid, the user is redirected to the reset password page.
+                            If the OTP is not valid or has expired, an error message is sent to the user.
+                            """)
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Update user information successfully"),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Bad request",
+        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+    @ApiResponse(
+        responseCode = "500",
+        description = "Internal server error",
+        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+  })
+  public ResponseEntity<GeneralResponseDTO> verifyOtp(
+      @Valid @RequestBody OtpRequestDTO otpRequestDTO)
+      throws InternalServerErrorException, BadRequestException {
+    return new ResponseEntity<>(
+        new GeneralResponseDTO(HttpStatus.OK, authService.verifyPasswordResetOtp(otpRequestDTO)),
         HttpStatus.OK);
   }
 }
