@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include:
+      file: classpath:/db/changelog/changes/001-alter-reset-token_add_otp
