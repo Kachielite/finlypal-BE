@@ -2,6 +2,7 @@ package com.derrick.finlypal.service;
 
 import com.derrick.finlypal.dto.AuthenticationRequestDTO;
 import com.derrick.finlypal.dto.AuthenticationResponseDTO;
+import com.derrick.finlypal.dto.OtpRequestDTO;
 import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
 import com.derrick.finlypal.dto.UsersUpdateRequestDTO;
 import com.derrick.finlypal.exception.BadRequestException;
@@ -24,6 +25,11 @@ public interface AuthService {
       throws NotFoundException, InternalServerErrorException;
 
   String getPasswordRequestToken(String email)
+      throws InternalServerErrorException, BadRequestException;
+
+  String getPasswordResetOtp(String email) throws InternalServerErrorException, BadRequestException;
+
+  String verifyPasswordResetOtp(OtpRequestDTO otpRequest)
       throws InternalServerErrorException, BadRequestException;
 
   String resetPassword(String token, UsersUpdateRequestDTO usersUpdateRequestDTO)

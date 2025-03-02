@@ -15,4 +15,10 @@ public class TokenGenerator {
     random.nextBytes(tokenBytes);
     return new BigInteger(1, tokenBytes).toString(32);
   }
+
+  public static String generateOtp() {
+    SecureRandom random = new SecureRandom();
+    int otp = 1000 + random.nextInt(9000);
+    return String.valueOf(otp);
+  }
 }

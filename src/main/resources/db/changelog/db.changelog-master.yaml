@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: classpath:/db/changelog/changes/001-alter-reset-token_add_otp.sql
+  - include:
+      file: classpath:/db/changelog/changes/002-alter-reset-token_update_otp_column_to_integer.sql
