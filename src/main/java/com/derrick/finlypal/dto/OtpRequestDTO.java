@@ -14,7 +14,7 @@ public record OtpRequestDTO(
         @NotEmpty(message = "OTP cannot be empty")
         @Schema(description = "OTP code", example = "123456")
         @Pattern(regexp = "^[0-9]{4}$", message = "OTP must be a 6-digit number")
-        String otp
+        int otp
 
 ) {
 }

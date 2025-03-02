@@ -249,40 +249,81 @@ public class AuthServiceImpl implements AuthService {
     /**
      * Generates an OTP for a user with the given email.
      *
-     * @param otpRequest the email of the user to generate the OTP for
+     * @param email, the email of the user to generate the OTP for
      * @return a string indicating that the OTP has been sent
      * @throws InternalServerErrorException if any other error occurs
      * @throws BadRequestException          if the email is not provided or is not a valid
      */
     @Override
-    public String getPasswordResetOtp(OtpRequestDTO otpRequest) throws InternalServerErrorException, BadRequestException {
+    public String getPasswordResetOtp(String email) throws InternalServerErrorException, BadRequestException {
 
         try {
 
-            if (otpRequest.email() == null || !PATTERN.matcher(otpRequest.email()).matches()) {
+            if (email == null || !PATTERN.matcher(email).matches()) {
                 throw new BadRequestException("Email not provided or is not a valid");
             }
 
-            log.info("Generating otp for user with email {}", otpRequest.email());
+            log.info("Generating otp for user with email {}", email);
             int otp = Integer.parseInt(TokenGenerator.generateOtp());
+            LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(10);
 
-            log.info("Saving otp for user with email {}", otpRequest.email());
-            ResetToken token = ResetToken.builder().otp(otp).email(otpRequest.email()).build();
+            log.info("Saving otp for user with email {}", email);
+            ResetToken token = ResetToken.builder().otp(otp).email(email).expiryDate(expiryDate).build();
             resetTokenRepository.save(token);
 
             String subject = "Password Reset";
             String body = "Use this otp to reset your password: " + otp;
 
-            log.info("Sending otp for user with email {}", otpRequest.email());
-            emailService.sendEmail(otpRequest.email(), subject, body);
+            log.info("Sending otp for user with email {}", email);
+            emailService.sendEmail(email, subject, body);
 
-            return "Otp sent to " + otpRequest.email();
+            return "Otp sent to " + email;
 
         } catch (BadRequestException e) {
-            log.error("Email associated with token not found", e);
+            log.error("Email not provided or is not a valid", e);
             throw e;
         } catch (Exception e) {
-            log.error("Error while generating password request token", e);
+            log.error("Error while generating password request otp", e);
+            throw new InternalServerErrorException("An unknown error occurred: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Verifies the OTP for password reset associated with the provided email.
+     *
+     * <p>This method performs the following steps: - Retrieves the reset token associated with the email.
+     * - Checks if the OTP is valid and not expired. - Returns a success message if the OTP is verified,
+     * otherwise throws an exception.
+     *
+     * @param otpRequest the data transfer object containing the email and OTP to be verified
+     * @return a string indicating the success of the OTP verification
+     * @throws InternalServerErrorException if any unknown error occurs during processing
+     * @throws BadRequestException          if the email is not associated with an OTP or if the OTP is invalid or expired
+     */
+    @Override
+    public String verifyPasswordResetOtp(OtpRequestDTO otpRequest) throws InternalServerErrorException, BadRequestException {
+        try {
+            log.info("Verifying otp for user with email {}", otpRequest.email());
+
+            ResetToken token = resetTokenRepository.findByEmail(otpRequest.email())
+                    .orElseThrow(() -> new BadRequestException("Email not associated with otp"));
+
+            boolean isTokenExpired = token.getExpiryDate().isBefore(LocalDateTime.now());
+            boolean isTokenValid = token.getOtp() == otpRequest.otp();
+
+            if (isTokenValid && !isTokenExpired) {
+                log.info("Otp verified for user with email {}", otpRequest.email());
+                return "Otp verified";
+            } else {
+                log.error("Invalid or expired otp for user with email {}", otpRequest.email());
+                throw new BadRequestException("Invalid or expired otp");
+            }
+
+        } catch (BadRequestException e) {
+            log.error("Email not associated with otp", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error while generating password request otp", e);
             throw new InternalServerErrorException("An unknown error occurred: " + e.getMessage());
         }
     }

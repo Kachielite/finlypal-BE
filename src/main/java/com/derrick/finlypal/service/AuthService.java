@@ -27,7 +27,9 @@ public interface AuthService {
     String getPasswordRequestToken(String email)
             throws InternalServerErrorException, BadRequestException;
 
-    String getPasswordResetOtp(OtpRequestDTO otpRequest) throws InternalServerErrorException, BadRequestException;
+    String getPasswordResetOtp(String email) throws InternalServerErrorException, BadRequestException;
+
+    String verifyPasswordResetOtp(OtpRequestDTO otpRequest) throws InternalServerErrorException, BadRequestException;
 
     String resetPassword(String token, UsersUpdateRequestDTO usersUpdateRequestDTO)
             throws InternalServerErrorException,
