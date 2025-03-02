@@ -122,6 +122,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -166,7 +169,7 @@
                 <version>3.4.4</version>
                 <configuration>
                     <to>
-                        <image>kachi28/finlypal:v1.0.1</image>
+                        <image>kachi28/finlypal:v1.2.0</image>
                     </to>
                     <container>
                         <environment>
