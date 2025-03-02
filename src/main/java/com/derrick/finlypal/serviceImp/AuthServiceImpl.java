@@ -2,6 +2,7 @@ package com.derrick.finlypal.serviceImp;
 
 import com.derrick.finlypal.dto.AuthenticationRequestDTO;
 import com.derrick.finlypal.dto.AuthenticationResponseDTO;
+import com.derrick.finlypal.dto.OtpRequestDTO;
 import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
 import com.derrick.finlypal.dto.UsersUpdateRequestDTO;
 import com.derrick.finlypal.entity.ResetToken;
@@ -245,9 +246,45 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Generates an OTP for a user with the given email.
+     *
+     * @param otpRequest the email of the user to generate the OTP for
+     * @return a string indicating that the OTP has been sent
+     * @throws InternalServerErrorException if any other error occurs
+     * @throws BadRequestException          if the email is not provided or is not a valid
+     */
     @Override
-    public String getPasswordResetOtp(String email) throws InternalServerErrorException, NotFoundException {
-        return "";
+    public String getPasswordResetOtp(OtpRequestDTO otpRequest) throws InternalServerErrorException, BadRequestException {
+
+        try {
+
+            if (otpRequest.email() == null || !PATTERN.matcher(otpRequest.email()).matches()) {
+                throw new BadRequestException("Email not provided or is not a valid");
+            }
+
+            log.info("Generating otp for user with email {}", otpRequest.email());
+            int otp = Integer.parseInt(TokenGenerator.generateOtp());
+
+            log.info("Saving otp for user with email {}", otpRequest.email());
+            ResetToken token = ResetToken.builder().otp(otp).email(otpRequest.email()).build();
+            resetTokenRepository.save(token);
+
+            String subject = "Password Reset";
+            String body = "Use this otp to reset your password: " + otp;
+
+            log.info("Sending otp for user with email {}", otpRequest.email());
+            emailService.sendEmail(otpRequest.email(), subject, body);
+
+            return "Otp sent to " + otpRequest.email();
+
+        } catch (BadRequestException e) {
+            log.error("Email associated with token not found", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error while generating password request token", e);
+            throw new InternalServerErrorException("An unknown error occurred: " + e.getMessage());
+        }
     }
 
     /**
