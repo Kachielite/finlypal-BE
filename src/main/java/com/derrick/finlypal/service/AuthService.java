@@ -3,8 +3,8 @@ package com.derrick.finlypal.service;
 import com.derrick.finlypal.dto.AuthenticationRequestDTO;
 import com.derrick.finlypal.dto.AuthenticationResponseDTO;
 import com.derrick.finlypal.dto.OtpRequestDTO;
+import com.derrick.finlypal.dto.ResetPasswordDTO;
 import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
-import com.derrick.finlypal.dto.UsersUpdateRequestDTO;
 import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotAuthorizedException;
@@ -32,7 +32,7 @@ public interface AuthService {
     String verifyPasswordResetOtp(OtpRequestDTO otpRequest)
             throws InternalServerErrorException, BadRequestException;
 
-    String resetPassword(String token, UsersUpdateRequestDTO usersUpdateRequestDTO)
+    String resetPassword(ResetPasswordDTO resetPasswordDTO)
             throws InternalServerErrorException,
             BadRequestException,
             NotAuthorizedException,

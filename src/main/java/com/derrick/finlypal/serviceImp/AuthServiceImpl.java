@@ -3,8 +3,8 @@ package com.derrick.finlypal.serviceImp;
 import com.derrick.finlypal.dto.AuthenticationRequestDTO;
 import com.derrick.finlypal.dto.AuthenticationResponseDTO;
 import com.derrick.finlypal.dto.OtpRequestDTO;
+import com.derrick.finlypal.dto.ResetPasswordDTO;
 import com.derrick.finlypal.dto.UsersRegistrationRequestDTO;
-import com.derrick.finlypal.dto.UsersUpdateRequestDTO;
 import com.derrick.finlypal.entity.ResetToken;
 import com.derrick.finlypal.entity.User;
 import com.derrick.finlypal.exception.BadRequestException;
@@ -346,7 +346,6 @@ public class AuthServiceImpl implements AuthService {
             boolean isTokenValid = Objects.equals(token.getOtp(), otpRequest.otp());
 
             if (isTokenValid && !isTokenExpired) {
-                resetTokenRepository.deleteByEmail(otpRequest.email());
                 log.info("Otp verified for user with email {}", otpRequest.email());
                 return "Otp verified";
             } else {
@@ -373,8 +372,7 @@ public class AuthServiceImpl implements AuthService {
      * - Finds the user associated with the token. - Deletes the used or expired reset token. -
      * Updates the user's password with the new password provided.
      *
-     * @param resetToken       the token used to authorize the password reset
-     * @param updateRequestDTO the data transfer object containing the new password
+     * @param resetPasswordDTO the data transfer object containing the new password, token and email associated with the user
      * @return a string indicating the success of the password reset
      * @throws InternalServerErrorException if any unknown error occurs during processing
      * @throws BadRequestException          if the reset token is not found or if the new password is invalid
@@ -382,41 +380,44 @@ public class AuthServiceImpl implements AuthService {
      * @throws NotFoundException            if the email associated with the token is not found
      */
     @Override
-    public String resetPassword(String resetToken, UsersUpdateRequestDTO updateRequestDTO)
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO)
             throws InternalServerErrorException,
             BadRequestException,
             NotAuthorizedException,
             NotFoundException {
         try {
-            log.info("Received reset password request");
-            ResetToken token = resetTokenRepository.findByToken(resetToken);
 
-            if (resetToken == null || token == null) {
+            log.info("Received reset password request");
+            Optional<ResetToken> resetToken = resetPasswordDTO.token().length() == 4 ?
+                    resetTokenRepository.findByOtpAndEmail(Integer.valueOf(resetPasswordDTO.token()), resetPasswordDTO.email()) :
+                    resetTokenRepository.findByTokenAndEmail(resetPasswordDTO.token(), resetPasswordDTO.email());
+
+            if (resetToken.isEmpty()) {
                 throw new BadRequestException("Reset token not found");
             }
 
-            if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
-                log.info("Deleting expired reset token for user with email {}", token.getEmail());
-                resetTokenRepository.delete(token);
+            if (resetToken.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+                log.info("Deleting expired reset token for user with email {}", resetToken.get().getEmail());
+                resetTokenRepository.delete(resetToken.get());
                 throw new NotAuthorizedException("Token has expired");
             }
 
             User user =
                     userRepository
-                            .findByEmail(token.getEmail())
+                            .findByEmail(resetToken.get().getEmail())
                             .orElseThrow(() -> new NotFoundException("Email associated with token not found"));
 
-            log.info("Deleting reset token for user with email {}", token.getEmail());
-            resetTokenRepository.delete(token);
+            log.info("Deleting reset token for user with email {}", resetToken.get().getEmail());
+            resetTokenRepository.delete(resetToken.get());
 
             log.info("Updating password for user with email {}", user.getEmail());
 
-            if (updateRequestDTO.newPassword() == null
-                    || updateRequestDTO.newPassword().trim().isEmpty()) {
+            if (resetPasswordDTO.newPassword() == null
+                    || resetPasswordDTO.newPassword().trim().isEmpty()) {
                 throw new BadRequestException("New password cannot be null or empty");
             }
 
-            user.setPassword(passwordEncoder.encode(updateRequestDTO.newPassword()));
+            user.setPassword(passwordEncoder.encode(resetPasswordDTO.newPassword()));
             userRepository.save(user);
 
             return "Password reset successfully";
