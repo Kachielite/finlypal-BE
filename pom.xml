@@ -169,7 +169,7 @@
                 <version>3.4.4</version>
                 <configuration>
                     <to>
-                        <image>kachi28/finlypal:v1.2.1</image>
+                        <image>kachi28/finlypal:v1.2.2</image>
                     </to>
                     <container>
                         <environment>
