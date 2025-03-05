@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,7 @@ public class UserController {
 
   private final UsersService usersService;
 
-  @GetMapping("/{user_id}")
+  @GetMapping("/user-details")
   @Operation(
       summary = "Fetch current logged in user's details",
       description =
@@ -54,13 +53,12 @@ public class UserController {
         description = "Internal server error",
         content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
   })
-  public ResponseEntity<UsersResponseDTO> getUser(
-      @NotEmpty(message = "user_id cannot be empty") @PathVariable String user_id)
+  public ResponseEntity<UsersResponseDTO> getUser()
       throws NotFoundException,
           InternalServerErrorException,
           BadRequestException,
           NotAuthorizedException {
-    return new ResponseEntity<>(usersService.getUserDetails(Long.valueOf(user_id)), HttpStatus.OK);
+    return new ResponseEntity<>(usersService.getUserDetails(), HttpStatus.OK);
   }
 
   @PutMapping("/{user_id}")

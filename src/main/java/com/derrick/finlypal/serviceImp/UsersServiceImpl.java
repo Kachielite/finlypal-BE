@@ -10,7 +10,9 @@ import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.repository.UserRepository;
 import com.derrick.finlypal.service.UsersService;
+import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import com.derrick.finlypal.util.JwtUtil;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -46,20 +48,22 @@ public class UsersServiceImpl implements UsersService {
    * @throws NotAuthorizedException if the user is not authorized
    */
   @Override
-  public UsersResponseDTO getUserDetails(Long userId)
+  public UsersResponseDTO getUserDetails()
       throws NotFoundException,
           InternalServerErrorException,
           NotAuthorizedException,
           BadRequestException {
 
     try {
-      if (userId == null) {
+      Long loggedInUserId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
+      if (loggedInUserId == null) {
         throw new BadRequestException("userId is null");
       }
-      log.info("Received request to get user details for {}", userId);
-      User user = validateUserAccess(userId);
+      log.info("Received request to get user details for {}", loggedInUserId);
+      User user = validateUserAccess(loggedInUserId);
 
-      log.info("User details found for user {}", userId);
+      log.info("User details found for user {}", loggedInUserId);
       return UsersResponseDTO.builder()
           .id(user.getId())
           .email(user.getEmail())

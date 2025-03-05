@@ -9,7 +9,7 @@ import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
 
 public interface UsersService {
-  UsersResponseDTO getUserDetails(Long userId)
+  UsersResponseDTO getUserDetails()
       throws NotFoundException,
           InternalServerErrorException,
           NotAuthorizedException,
