@@ -7,8 +7,6 @@ import com.derrick.finlypal.dto.InsightsTopExpensesDTO;
 import com.derrick.finlypal.dto.InsightsTotalSpendDTO;
 import com.derrick.finlypal.entity.Expense;
 import com.derrick.finlypal.enums.ExpenseType;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,23 +20,18 @@ import org.springframework.data.repository.query.Param;
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
   Optional<Expense> findById(Long id);
 
-  Page<Expense> findAllByUserId(Long userId, Pageable pageable);
-
-  Page<Expense> findAllByCategoryIdAndUserId(Long categoryId, Long userId, Pageable pageable);
-
-  Page<Expense> findAllByUserIdAndDateBetween(
-      Long userId,
-      @NotNull(message = "Start date is required") LocalDate startDate,
-      @NotNull(message = "End date is required")
-          @FutureOrPresent(message = "End date must not be less than start date")
-          LocalDate endDate,
-      Pageable pageable);
-
-  Page<Expense> findAllByTypeAndUserIdOrDateBetween(
-      ExpenseType type,
-      Long userId,
-      LocalDate startDate,
-      @FutureOrPresent(message = "End date must not be less than start date") LocalDate endDate,
+  @Query(
+      "SELECT e FROM Expense e WHERE e.user.id = :userId "
+          + "AND e.date BETWEEN :startDate AND :endDate "
+          + // Always required
+          "AND (:expenseType IS NULL OR e.type = :expenseType) "
+          + "AND (:categoryId IS NULL OR e.category.id = :categoryId)")
+  Page<Expense> findAllByFilters(
+      @Param("userId") Long userId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate,
+      @Param("expenseType") ExpenseType expenseType,
+      @Param("categoryId") Long categoryId,
       Pageable pageable);
 
   @Query(

@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDate;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -80,76 +79,16 @@ public class ExpenseController {
         content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
   })
   public ResponseEntity<Page<ExpenseResponseDTO>> getAllExpenses(
-      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize)
-      throws InternalServerErrorException {
-    return new ResponseEntity<>(expenseService.findAllByUserId(page, pageSize), HttpStatus.OK);
-  }
-
-  @GetMapping("/category/{category_id}")
-  @Operation(
-      summary = "Retrieve Expenses by Category",
-      description =
-          "Retrieve a list of expenses associated with a specific category ID for the currently logged-in user. This operation ensures that the user is authenticated and authorized to access the data. It fetches the expenses from the database, organizes them into a paginated format, and returns them in a structured response.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Expenses fetched successfully"),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<Page<ExpenseResponseDTO>> getExpensesByCategoryId(
-      @NotEmpty(message = "Category id cannot be empty") @PathVariable Long category_id,
+      @RequestParam(required = false) Long category_id,
+      @RequestParam() LocalDate start_date,
+      @RequestParam() LocalDate end_date,
+      @RequestParam(required = false) ExpenseType expenseType,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int pageSize)
-      throws InternalServerErrorException {
+      throws InternalServerErrorException, BadRequestException {
     return new ResponseEntity<>(
-        expenseService.findAllByCategoryIdAndUserId(category_id, page, pageSize), HttpStatus.OK);
-  }
-
-  @GetMapping("/dates")
-  @Operation(
-      summary = "Get expenses by category",
-      description =
-          "Fetch a list of expenses associated with a specific category ID for the currently logged-in user. This operation ensures that the user is authenticated and authorized to access the data. It fetches the expenses from the database, organizes them into a paginated format, and returns them in a structured response.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Expenses fetched successfully"),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<Page<ExpenseResponseDTO>> getExpensesByCategoryId(
-      @RequestParam LocalDate start_date,
-      @RequestParam LocalDate end_date,
-      @RequestParam int page,
-      @RequestParam int pageSize)
-      throws BadRequestException, InternalServerErrorException {
-    return new ResponseEntity<>(
-        expenseService.findAllByDateBetween(start_date, end_date, page, pageSize), HttpStatus.OK);
-  }
-
-  @GetMapping("/types/{type}")
-  @Operation(
-      summary = "Fetch expenses by expense type and dates for the logged-in user",
-      description =
-          "This operation fetches expenses by expense type and dates for the logged-in user. It ensures that the user is authenticated and authorized to access the data. It fetches the expenses from the database, organizes them into a paginated format, and returns them in a structured response. The response includes the total count of expenses, the page size, and the list of expenses.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Expenses fetched successfully"),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<Page<ExpenseResponseDTO>> getExpensesByTypeAndDate(
-      @NotEmpty(message = "Expense type cannot be empty") @PathVariable ExpenseType type,
-      @RequestParam(required = false) Optional<LocalDate> start_date,
-      @RequestParam(required = false) Optional<LocalDate> end_date,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int pageSize)
-      throws BadRequestException, InternalServerErrorException {
-    return new ResponseEntity<>(
-        expenseService.findAllByTypeAndUserIdOrDateBetween(
-            type, start_date.orElse(null), end_date.orElse(null), page, pageSize),
+        expenseService.findAllByUserIdOrDateBetweenOrTypeOrCategoryId(
+            expenseType, start_date, end_date, category_id, page, pageSize),
         HttpStatus.OK);
   }
 
@@ -176,10 +115,10 @@ public class ExpenseController {
       summary = "Update expense",
       description =
           """
-                    Modify existing expense
+                            Modify existing expense
 
-                    This operation modifies an existing expense in the database. It ensures that the user is authenticated and authorized to access the data. It updates the expense in the database, maps the new expense to the response format, and returns it in a structured response. The response includes the expense's ID, description, amount, type, category ID, and user ID.
-                    """)
+                            This operation modifies an existing expense in the database. It ensures that the user is authenticated and authorized to access the data. It updates the expense in the database, maps the new expense to the response format, and returns it in a structured response. The response includes the expense's ID, description, amount, type, category ID, and user ID.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Expense updated successfully"),
     @ApiResponse(
@@ -199,10 +138,10 @@ public class ExpenseController {
       summary = "Delete expense",
       description =
           """
-                    Delete expense by id
+                            Delete expense by id
 
-                    This operation deletes an existing expense by its ID. It ensures that the user is authenticated and authorized to access the data. It deletes the expense in the database, and returns a success response.
-                    """)
+                            This operation deletes an existing expense by its ID. It ensures that the user is authenticated and authorized to access the data. It deletes the expense in the database, and returns a success response.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Expense deleted successfully"),
     @ApiResponse(

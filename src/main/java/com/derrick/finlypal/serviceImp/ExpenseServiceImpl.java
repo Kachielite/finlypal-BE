@@ -90,178 +90,66 @@ public class ExpenseServiceImpl implements ExpenseService {
   }
 
   /**
-   * This method is used to find all expenses associated with a user. It takes in two parameters:
-   * the page number and the page size. It returns a {@link Page} of {@link ExpenseResponseDTO}
-   * containing the results. It also logs the number of expenses found. If any unexpected error
-   * occurs while trying to find the expenses, it throws an {@link InternalServerErrorException}.
+   * This method is used to find all expenses associated with the currently logged in user based on
+   * the given criteria. It can be used to find expenses by type, date range and category id. If the
+   * start date is provided but the end date is not, it throws a {@link BadRequestException}. If the
+   * end date is provided but the start date is not, it throws a {@link BadRequestException}. If the
+   * start date is after the end date, it throws a {@link BadRequestException}. If any unexpected
+   * error occurs while trying to find the expenses, it throws an {@link
+   * InternalServerErrorException}.
    *
-   * @param page the page number
-   * @param pageSize the page size
-   * @return a {@link Page} of {@link ExpenseResponseDTO} containing the results
+   * @param expenseType the type of expense to be found
+   * @param startDate the start date of the range, inclusive
+   * @param endDate the end date of the range, inclusive
+   * @param categoryId the category id of the expense, if provided
+   * @param page the page number to be returned
+   * @param pageSize the number of items to be returned in each page
+   * @return a page of expenses found, represented as an {@link ExpenseResponseDTO}
+   * @throws BadRequestException if the request is invalid
    * @throws InternalServerErrorException if any unexpected error occurs while trying to find the
    *     expenses
    */
   @Override
-  public Page<ExpenseResponseDTO> findAllByUserId(int page, int pageSize)
-      throws InternalServerErrorException {
+  public Page<ExpenseResponseDTO> findAllByUserIdOrDateBetweenOrTypeOrCategoryId(
+      ExpenseType expenseType,
+      LocalDate startDate,
+      LocalDate endDate,
+      Long categoryId,
+      int page,
+      int pageSize)
+      throws InternalServerErrorException, BadRequestException {
+
+    log.info(
+        "Filtering expenses: Type: {}, Dates: {} - {}, Category: {}",
+        expenseType,
+        startDate,
+        endDate,
+        categoryId);
+
+    if ((startDate != null && endDate == null) || (startDate == null && endDate != null)) {
+      throw new BadRequestException("Both start date and end date must be provided together.");
+    }
+
+    if (startDate != null && startDate.isAfter(endDate)) {
+      throw new BadRequestException("Start date cannot be after end date.");
+    }
+
+    if (startDate != null && endDate.isBefore(startDate)) {
+      throw new BadRequestException("End date must not be before start date");
+    }
+
+    Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
     Pageable pageable = PageRequest.of(page, pageSize);
+
     try {
-      Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
-
-      log.info("Finding expenses with user id {}", userId);
-      Page<Expense> expenses = expenseRepository.findAllByUserId(userId, pageable);
-
+      Page<Expense> expenses =
+          expenseRepository.findAllByFilters(
+              userId, startDate, endDate, expenseType, categoryId, pageable);
       log.info("Found {} expenses", expenses.getTotalElements());
       return convertExpenseToExpenseDTO(expenses);
     } catch (Exception e) {
-      log.error("Unexpected error occurred while trying to find expenses for user");
-      throw new InternalServerErrorException(e.getMessage());
-    }
-  }
-
-  /**
-   * Finds all expenses associated with a user and a category. It takes in three parameters: the
-   * category id, the page number, and the page size. It returns a {@link Page} of {@link
-   * ExpenseResponseDTO} containing the results. It also logs the number of expenses found. If any
-   * unexpected error occurs while trying to find the expenses, it throws an {@link
-   * InternalServerErrorException}.
-   *
-   * @param categoryId the category id
-   * @param page the page number
-   * @param pageSize the page size
-   * @return a {@link Page} of {@link ExpenseResponseDTO} containing the results
-   * @throws InternalServerErrorException if any unexpected error occurs while trying to find the
-   *     expenses
-   */
-  @Override
-  public Page<ExpenseResponseDTO> findAllByCategoryIdAndUserId(
-      Long categoryId, int page, int pageSize) throws InternalServerErrorException {
-    log.info("Finding expenses with category id {}", categoryId);
-    Pageable pageable = PageRequest.of(page, pageSize);
-    try {
-      Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
-      Page<Expense> expenses =
-          expenseRepository.findAllByCategoryIdAndUserId(categoryId, userId, pageable);
-
-      log.info("Found {} expenses for category id {}", expenses.getTotalElements(), categoryId);
-      return convertExpenseToExpenseDTO(expenses);
-    } catch (Exception e) {
-      log.error(
-          "Unexpected error occurred while trying to find expenses for category id {}", categoryId);
-      throw new InternalServerErrorException(e.getMessage());
-    }
-  }
-
-  /**
-   * Finds all expenses associated with a user and date range. It takes in four parameters: the
-   * start date, the end date, the page number, and the page size. It returns a {@link Page} of
-   * {@link ExpenseResponseDTO} containing the results. It also logs the number of expenses found.
-   * If any unexpected error occurs while trying to find the expenses, it throws an {@link
-   * InternalServerErrorException}. If the start date is after the end date, it throws a {@link
-   * BadRequestException}.
-   *
-   * @param startDate the start date
-   * @param endDate the end date
-   * @param page the page number
-   * @param pageSize the page size
-   * @return a {@link Page} of {@link ExpenseResponseDTO} containing the results
-   * @throws BadRequestException if the start date is after the end date
-   * @throws InternalServerErrorException if any unexpected error occurs while trying to find the
-   *     expenses
-   */
-  @Override
-  public Page<ExpenseResponseDTO> findAllByDateBetween(
-      LocalDate startDate, LocalDate endDate, int page, int pageSize)
-      throws BadRequestException, InternalServerErrorException {
-    log.info("Finding expenses with date between {} and {}", startDate, endDate);
-
-    Pageable pageable = PageRequest.of(page, pageSize);
-    try {
-      Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
-
-      if (startDate.isAfter(endDate)) {
-        throw new BadRequestException("Start date cannot be after end date");
-      }
-
-      Page<Expense> expenses =
-          expenseRepository.findAllByUserIdAndDateBetween(userId, startDate, endDate, pageable);
-
-      log.info(
-          "Found {} expenses for dates between {} and {}",
-          expenses.getTotalElements(),
-          startDate,
-          endDate);
-      return convertExpenseToExpenseDTO(expenses);
-    } catch (BadRequestException e) {
-      log.error(e.getMessage());
-      throw e;
-    } catch (Exception e) {
-      log.error(e.getMessage());
-      throw new InternalServerErrorException(e.getMessage());
-    }
-  }
-
-  /**
-   * Finds all expenses associated with a user and date range, and optionally a specific type. It
-   * takes in five parameters: the type of expense, the start date, the end date, the page number,
-   * and the page size. It returns a {@link Page} of {@link ExpenseResponseDTO} containing the
-   * results. It also logs the number of expenses found. If any unexpected error occurs while trying
-   * to find the expenses, it throws an {@link InternalServerErrorException}. If the start date is
-   * after the end date, or if either the start or end date is null when the other is not, it throws
-   * a {@link BadRequestException}.
-   *
-   * @param expenseType the type of expense
-   * @param startDate the start date
-   * @param endDate the end date
-   * @param page the page number
-   * @param pageSize the page size
-   * @return a {@link Page} of {@link ExpenseResponseDTO} containing the results
-   * @throws BadRequestException if the start date is after the end date, or if either the start or
-   *     end date is null when the other is not
-   * @throws InternalServerErrorException if any unexpected error occurs while trying to find the
-   *     expenses
-   */
-  @Override
-  public Page<ExpenseResponseDTO> findAllByTypeAndUserIdOrDateBetween(
-      ExpenseType expenseType, LocalDate startDate, LocalDate endDate, int page, int pageSize)
-      throws BadRequestException, InternalServerErrorException {
-    log.info(
-        "Finding expenses of type {} with date between {} and {}", expenseType, startDate, endDate);
-    Pageable pageable = PageRequest.of(page, pageSize);
-
-    try {
-      Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
-      if (startDate != null && endDate == null) {
-        throw new BadRequestException("Start date is required when end date is provided");
-      }
-
-      if (startDate == null && endDate != null) {
-        throw new BadRequestException("End date is required when start date is null");
-      }
-
-      if (startDate != null && startDate.isAfter(endDate)) {
-        throw new BadRequestException("Start date cannot be after end date");
-      }
-
-      log.info(
-          "Searching expenses of type {} with date between {} and {}",
-          expenseType,
-          startDate,
-          endDate);
-      Page<Expense> expenses =
-          expenseRepository.findAllByTypeAndUserIdOrDateBetween(
-              expenseType, userId, startDate, endDate, pageable);
-
-      log.info(
-          "Successfully found {} expenses of type {}", expenses.getTotalElements(), expenseType);
-      return convertExpenseToExpenseDTO(expenses);
-
-    } catch (BadRequestException e) {
-      log.error(e.getMessage());
-      throw e;
-    } catch (Exception e) {
-      log.error(e.getMessage());
-      throw new InternalServerErrorException(e.getMessage());
+      log.error("Error fetching expenses: {}", e.getMessage());
+      throw new InternalServerErrorException("Error retrieving expenses.");
     }
   }
 

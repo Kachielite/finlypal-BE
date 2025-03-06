@@ -15,19 +15,14 @@ public interface ExpenseService {
   ExpenseResponseDTO findById(Long id)
       throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 
-  Page<ExpenseResponseDTO> findAllByUserId(int page, int pageSize)
-      throws InternalServerErrorException;
-
-  Page<ExpenseResponseDTO> findAllByCategoryIdAndUserId(Long categoryId, int page, int pageSize)
-      throws InternalServerErrorException;
-
-  Page<ExpenseResponseDTO> findAllByDateBetween(
-      LocalDate startDate, LocalDate endDate, int page, int pageSize)
-      throws BadRequestException, InternalServerErrorException;
-
-  Page<ExpenseResponseDTO> findAllByTypeAndUserIdOrDateBetween(
-      ExpenseType expenseType, LocalDate startDate, LocalDate endDate, int page, int pageSize)
-      throws BadRequestException, InternalServerErrorException;
+  Page<ExpenseResponseDTO> findAllByUserIdOrDateBetweenOrTypeOrCategoryId(
+      ExpenseType expenseType,
+      LocalDate startDate,
+      LocalDate endDate,
+      Long categoryId,
+      int page,
+      int pageSize)
+      throws InternalServerErrorException, BadRequestException;
 
   GeneralResponseDTO addExpense(ExpenseRequestDTO expenseRequestDTO)
       throws InternalServerErrorException, BadRequestException;
