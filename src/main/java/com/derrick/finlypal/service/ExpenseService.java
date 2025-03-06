@@ -8,24 +8,28 @@ import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
+import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 
-import java.time.LocalDate;
-
 public interface ExpenseService {
-    ExpenseResponseDTO findById(Long id)
-            throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
+  ExpenseResponseDTO findById(Long id)
+      throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 
-    Page<ExpenseResponseDTO> findAllByUserIdAndDateBetweenOrTypeOrCategoryId(
-            ExpenseType expenseType, LocalDate startDate, LocalDate endDate, Long categoryId, int page, int pageSize)
-            throws InternalServerErrorException, BadRequestException;
+  Page<ExpenseResponseDTO> findAllByUserIdOrDateBetweenOrTypeOrCategoryId(
+      ExpenseType expenseType,
+      LocalDate startDate,
+      LocalDate endDate,
+      Long categoryId,
+      int page,
+      int pageSize)
+      throws InternalServerErrorException, BadRequestException;
 
-    GeneralResponseDTO addExpense(ExpenseRequestDTO expenseRequestDTO)
-            throws InternalServerErrorException, BadRequestException;
+  GeneralResponseDTO addExpense(ExpenseRequestDTO expenseRequestDTO)
+      throws InternalServerErrorException, BadRequestException;
 
-    GeneralResponseDTO updateExpense(Long expenseId, ExpenseRequestDTO expenseRequestDTO)
-            throws NotFoundException, InternalServerErrorException, NotAuthorizedException;
+  GeneralResponseDTO updateExpense(Long expenseId, ExpenseRequestDTO expenseRequestDTO)
+      throws NotFoundException, InternalServerErrorException, NotAuthorizedException;
 
-    GeneralResponseDTO deleteExpense(Long id)
-            throws InternalServerErrorException, NotAuthorizedException, NotFoundException;
+  GeneralResponseDTO deleteExpense(Long id)
+      throws InternalServerErrorException, NotAuthorizedException, NotFoundException;
 }
