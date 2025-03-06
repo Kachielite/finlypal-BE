@@ -32,7 +32,7 @@ public interface ExpenseService {
 
     Page<ExpenseResponseDTO> findAllByUserIdAndDateBetweenOrTypeOrCategoryId(
             ExpenseType expenseType, LocalDate startDate, LocalDate endDate, Long categoryId, int page, int pageSize)
-            throws BadRequestException, InternalServerErrorException;
+            throws InternalServerErrorException;
 
     GeneralResponseDTO addExpense(ExpenseRequestDTO expenseRequestDTO)
             throws InternalServerErrorException, BadRequestException;
