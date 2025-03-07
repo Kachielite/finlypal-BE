@@ -43,14 +43,14 @@ public class InsightsController {
       summary = "Total Spend",
       description =
           """
-                    Get users total spend.
-                    This endpoint returns the total amount spent by a user
-                    within a specified period. The period can be specified
-                    using the query parameters start_date and end_date.
-                    If the period is not specified, the endpoint will return
-                    the total amount spent by the user since the start of
-                    the current month.
-                    """)
+                            Get users total spend.
+                            This endpoint returns the total amount spent by a user
+                            within a specified period. The period can be specified
+                            using the query parameters start_date and end_date.
+                            If the period is not specified, the endpoint will return
+                            the total amount spent by the user since the start of
+                            the current month.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Total spend fetched successfully"),
     @ApiResponse(
@@ -63,8 +63,8 @@ public class InsightsController {
         content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
   })
   public ResponseEntity<InsightsTotalSpendDTO> totalSpend(
-      @RequestParam(required = false) LocalDate start_date,
-      @RequestParam(required = false) LocalDate end_date,
+      @RequestParam(required = true) LocalDate start_date,
+      @RequestParam(required = true) LocalDate end_date,
       @RequestParam ExpenseType type)
       throws InternalServerErrorException, BadRequestException {
     return new ResponseEntity<>(
@@ -76,15 +76,15 @@ public class InsightsController {
       summary = "Total Spend By Category",
       description =
           """
-                    Get users' total spend by category.
-                    This endpoint returns the total amount spent by a user
-                    in each category within a specified period. The period
-                    can be specified using the query parameters start_date
-                    and end_date. If the period is not specified, the
-                    endpoint will return the total amount spent by the user
-                    since the start of the current month. The categories are
-                    ordered by their total spend in descending order.
-                    """)
+                            Get users' total spend by category.
+                            This endpoint returns the total amount spent by a user
+                            in each category within a specified period. The period
+                            can be specified using the query parameters start_date
+                            and end_date. If the period is not specified, the
+                            endpoint will return the total amount spent by the user
+                            since the start of the current month. The categories are
+                            ordered by their total spend in descending order.
+                            """)
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
@@ -112,13 +112,13 @@ public class InsightsController {
       summary = "User's Daily Spending Analysis",
       description =
           """
-                    Retrieve a detailed analysis of the user's daily spending habits.
-                    This endpoint provides a day-by-day breakdown of the total amount
-                    spent by the user within a specified date range. If no date range
-                    is provided, the default will be the current month. The data is
-                    useful for understanding spending patterns and making informed
-                    financial decisions.
-                    """)
+                            Retrieve a detailed analysis of the user's daily spending habits.
+                            This endpoint provides a day-by-day breakdown of the total amount
+                            spent by the user within a specified date range. If no date range
+                            is provided, the default will be the current month. The data is
+                            useful for understanding spending patterns and making informed
+                            financial decisions.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Daily spend fetched successfully"),
     @ApiResponse(
@@ -144,14 +144,14 @@ public class InsightsController {
       summary = "Top Expenses",
       description =
           """
-                    Get users top expenses.
-                    This endpoint returns a list of the user's top expenses
-                    within a specified period. The period can be specified
-                    using the query parameters start_date and end_date. If
-                    the period is not specified, the endpoint will return the
-                    top expenses for the current month. The expenses are
-                    ordered by their amount in descending order.
-                    """)
+                            Get users top expenses.
+                            This endpoint returns a list of the user's top expenses
+                            within a specified period. The period can be specified
+                            using the query parameters start_date and end_date. If
+                            the period is not specified, the endpoint will return the
+                            top expenses for the current month. The expenses are
+                            ordered by their amount in descending order.
+                            """)
   public ResponseEntity<Page<InsightsTopExpensesDTO>> topExpenses(
       @RequestParam(required = false) LocalDate start_date,
       @RequestParam(required = false) LocalDate end_date,
@@ -168,12 +168,12 @@ public class InsightsController {
       summary = "Monthly Spend",
       description =
           """
-                    Get users monthly spend.
-                    This endpoint returns the total spend for the user for each month
-                    within a specified period. The period can be specified using the query
-                    parameters start_date and end_date. If the period is not specified,
-                    the endpoint will return the monthly spend for the current month.
-                    """)
+                            Get users monthly spend.
+                            This endpoint returns the total spend for the user for each month
+                            within a specified period. The period can be specified using the query
+                            parameters start_date and end_date. If the period is not specified,
+                            the endpoint will return the monthly spend for the current month.
+                            """)
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Monthly spend fetched successfully"),
     @ApiResponse(

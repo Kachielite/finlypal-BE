@@ -50,7 +50,11 @@ public class InsightsServiceImpl implements InsightsService {
       LocalDate startDate, LocalDate endDate, ExpenseType type)
       throws InternalServerErrorException, BadRequestException {
 
-    log.info("Received request to get total spend");
+    log.info(
+        "Received request to get total spend for type {}, between {} and {}",
+        type,
+        startDate,
+        endDate);
     try {
       Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
 
@@ -69,6 +73,7 @@ public class InsightsServiceImpl implements InsightsService {
       }
 
       BigDecimal total = expenseRepository.findTotalAmount(userId, startDate, endDate, type);
+      log.info("Total {} is {}", type, total);
       return InsightsTotalSpendDTO.builder().totalSpend(total).build();
 
     } catch (BadRequestException e) {

@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -46,15 +47,15 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
       @Param("type") ExpenseType type);
 
   @Query(
-      "SELECT CAST(COALESCE(SUM(e.amount), 0) AS bigdecimal) FROM Expense e "
+      "SELECT COALESCE(SUM(e.amount), 0) FROM Expense e "
           + "WHERE e.user.id = :userId "
           + "AND e.date BETWEEN :startDate AND :endDate "
-          + "AND (:type IS NULL OR e.type = :type)")
+          + "AND e.type = :type")
   BigDecimal findTotalAmount(
       @Param("userId") Long userId,
-      @Param("startDate") LocalDate startDate,
-      @Param("endDate") LocalDate endDate,
-      @Param("type") ExpenseType type);
+      @Param("startDate") @NonNull LocalDate startDate,
+      @Param("endDate") @NonNull LocalDate endDate,
+      @Param("type") @NonNull ExpenseType type);
 
   @Query(
       "SELECT new com.derrick.finlypal.dto.InsightsSpendByCategoryDTO("
