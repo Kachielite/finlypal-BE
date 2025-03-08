@@ -74,7 +74,8 @@ public class ExpenseServiceImpl implements ExpenseService {
           .date(expense.getDate())
           .amount(expense.getAmount())
           .description(expense.getDescription())
-          .category_id(expense.getCategory().getId())
+          .categoryId(expense.getCategory().getId())
+          .categoryName(expense.getCategory().getDisplayName())
           .build();
 
     } catch (NotFoundException e) {
@@ -357,7 +358,8 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .amount(expense.getAmount())
                 .type(expense.getType())
                 .description(expense.getDescription())
-                .category_id(expense.getCategory().getId())
+                .categoryId(expense.getCategory().getId())
+                .categoryName(expense.getCategory().getDisplayName())
                 .build());
   }
 }

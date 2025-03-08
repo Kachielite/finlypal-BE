@@ -1,6 +1,7 @@
 package com.derrick.finlypal.dto;
 
 import com.derrick.finlypal.enums.ExpenseType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,5 +33,10 @@ public class ExpenseResponseDTO {
   private ExpenseType type;
 
   @Schema(description = "Id of category", example = "1")
-  private Long category_id;
+  @JsonProperty("category_id")
+  private Long categoryId;
+
+  @Schema(description = "category name of expense", example = "Utility")
+  @JsonProperty("category_name")
+  private String categoryName;
 }
