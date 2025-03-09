@@ -106,7 +106,7 @@ public class ExpenseController {
                     description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
-    public ResponseEntity<GeneralResponseDTO> createExpense(
+    public ResponseEntity<ExpenseResponseDTO> createExpense(
             @Valid @RequestBody ExpenseRequestDTO expense)
             throws InternalServerErrorException, BadRequestException {
         return new ResponseEntity<>(expenseService.addExpense(expense), HttpStatus.CREATED);
@@ -128,7 +128,7 @@ public class ExpenseController {
                     description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
-    public ResponseEntity<GeneralResponseDTO> updateExpense(
+    public ResponseEntity<ExpenseResponseDTO> updateExpense(
             @NotNull(message = "Expense id cannot be empty") @PathVariable Long expense_id,
             @RequestBody ExpenseRequestDTO expense)
             throws NotFoundException, InternalServerErrorException, NotAuthorizedException {
