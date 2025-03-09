@@ -202,10 +202,11 @@ public class ExpenseServiceImpl implements ExpenseService {
                     .builder()
                     .id(expense.getId())
                     .categoryId(expense.getCategory().getId())
-                    .categoryName(expense.getCategory().getName())
+                    .categoryName(expense.getCategory().getDisplayName())
                     .description(expense.getDescription())
                     .amount(expense.getAmount())
                     .date(expense.getDate())
+                    .type(expense.getType())
                     .build();
 
         } catch (BadRequestException e) {
@@ -288,10 +289,11 @@ public class ExpenseServiceImpl implements ExpenseService {
                     .builder()
                     .id(expense.getId())
                     .categoryId(expense.getCategory().getId())
-                    .categoryName(expense.getCategory().getName())
+                    .categoryName(expense.getCategory().getDisplayName())
                     .description(expense.getDescription())
                     .amount(expense.getAmount())
                     .date(expense.getDate())
+                    .type(expense.getType())
                     .build();
 
         } catch (NotFoundException | NotAuthorizedException e) {
