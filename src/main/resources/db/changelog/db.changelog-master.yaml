@@ -3,3 +3,19 @@ databaseChangeLog:
       file: classpath:/db/changelog/changes/001-alter-reset-token_add_otp.sql
   - include:
       file: classpath:/db/changelog/changes/002-alter-reset-token_update_otp_column_to_integer.sql
+  - include:
+      file: classpath:/db/changelog/changes/003-create-budget-table.sql
+  - include:
+      file: classpath:/db/changelog/changes/004-create-budget-items-table.sql
+  - include:
+      file: classpath:/db/changelog/changes/005-create-savings-table.sql
+  - include:
+      file: classpath:/db/changelog/changes/006-alter-expense_add_buget_item_id_column.sql
+  - include:
+      file: classpath:/db/changelog/changes/007-alter-expense-link_expense_to_budget_items_id.sql
+  - include:
+      file: classpath:/db/changelog/changes/008-remove-budget-item-table.sql
+  - include:
+      file: classpath:/db/changelog/changes/009-create-savings-items-table.sql
+  - include:
+      file: classpath:/db/changelog/changes/010-alter-expense_link_expense_to_savings_item.sql

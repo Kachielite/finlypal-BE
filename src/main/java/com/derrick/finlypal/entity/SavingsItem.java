@@ -1,6 +1,6 @@
 package com.derrick.finlypal.entity;
 
-import com.derrick.finlypal.enums.SavingsStatus;
+import com.derrick.finlypal.enums.SavingsItemStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,7 +20,6 @@ import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.Timestamp;
 
 @Getter
@@ -29,39 +28,26 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "savings")
-public class Savings {
+@Table(name = "savings_items")
+public class SavingsItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull(message = "Goal name is required")
-    @Column(name = "goal_name")
-    private String goalName;
+    @NotNull(message = "Name is required")
+    private String name;
 
-    @NotNull(message = "Target amount is required")
-    @Column(name = "target_amount")
-    private BigDecimal targetAmount;
-
-    @NotNull(message = "Saved amount is required")
-    @Column(name = "saved_amount")
-    private BigDecimal savedAmount = BigDecimal.ZERO;
-
-    @NotNull(message = "Start date is required")
-    @Column(name = "start_date")
-    private Date startDate;
-
-    @NotNull(message = "End date is required")
-    @Column(name = "end_date")
-    private Date endDate;
+    @NotNull(message = "Allocated amount is required")
+    @Column(name = "allocated_amount")
+    private BigDecimal allocatedAmount;
 
     @Enumerated(EnumType.STRING)
-    private SavingsStatus status;
+    private SavingsItemStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "savings_id")
+    private Savings savings;
 
     @Column(name = "created_at")
     private Timestamp createdAt;

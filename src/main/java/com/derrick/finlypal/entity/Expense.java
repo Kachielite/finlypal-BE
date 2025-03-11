@@ -57,8 +57,12 @@ public class Expense {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "budget_item_id")
+    @JoinColumn(name = "budget_items_id")
     private BudgetItem budgetItem;
+
+    @ManyToOne
+    @JoinColumn(name = "savings_items_id")
+    private SavingsItem savingsItem;
 
     @Column(name = "created_at")
     private Timestamp createdAt;
