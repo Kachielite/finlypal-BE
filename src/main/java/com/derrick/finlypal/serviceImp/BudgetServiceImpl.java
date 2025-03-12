@@ -7,6 +7,7 @@ import com.derrick.finlypal.entity.User;
 import com.derrick.finlypal.enums.BudgetStatus;
 import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
+import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.repository.BudgetRepository;
 import com.derrick.finlypal.service.BudgetService;
@@ -44,6 +45,7 @@ public class BudgetServiceImpl implements BudgetService {
                 throw new BadRequestException("Start date and end date cannot be in the past");
             }
 
+            log.info("Creating new budget");
             Budget newBudget = Budget.builder()
                     .name(budgetRequestDTO.budgetName())
                     .startDate(budgetRequestDTO.startDate())
@@ -53,6 +55,7 @@ public class BudgetServiceImpl implements BudgetService {
                     .user(loggedInUser)
                     .build();
 
+            log.info("Saving new budget");
             Budget budget = budgetRepository.save(newBudget);
 
             return BudgetResponseDTO.builder()
@@ -76,8 +79,61 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public BudgetResponseDTO updateBudget(Long budgetId, BudgetRequestDTO budgetRequestDTO) throws BadRequestException, NotFoundException, InternalServerErrorException {
-        return null;
+    public BudgetResponseDTO updateBudget(Long budgetId, BudgetRequestDTO budgetRequestDTO)
+            throws BadRequestException, NotFoundException, NotAuthorizedException, InternalServerErrorException {
+        log.info("Received request to update budget {}", budgetId);
+
+        try {
+
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
+            Budget budget = budgetRepository.findById(budgetId)
+                    .orElseThrow(() -> new NotFoundException("Budget not found with id: " + budgetId));
+
+            if (!Objects.equals(budget.getUser().getId(), userId)) {
+                throw new BadRequestException("You are not authorized to update this budget");
+            }
+
+            if (budgetRequestDTO.startDate().isAfter(budgetRequestDTO.endDate())) {
+                throw new NotAuthorizedException("Start date must be before end date");
+            }
+
+            if (budgetRequestDTO.startDate().isAfter(LocalDate.now()) && budgetRequestDTO.endDate().isAfter(LocalDate.now())) {
+                throw new BadRequestException("Start date and end date cannot be in the past");
+            }
+
+            if (budget.getStatus() == BudgetStatus.COMPLETED) {
+                throw new BadRequestException("Completed budgets cannot be updated");
+            }
+
+            log.info("Updating budget");
+            budget.setName(budgetRequestDTO.budgetName());
+            budget.setStartDate(budgetRequestDTO.startDate());
+            budget.setEndDate(budgetRequestDTO.endDate());
+            budget.setTotalBudget(budgetRequestDTO.totalBudget());
+            budget.setStatus(getBudgetStatus(budgetRequestDTO.startDate(), budgetRequestDTO.endDate(), Optional.of(budgetRequestDTO.totalBudget()), Optional.empty()));
+
+            log.info("Saving updated budget");
+            Budget updatedBudget = budgetRepository.save(budget);
+
+            return BudgetResponseDTO.builder()
+                    .id(updatedBudget.getId())
+                    .name(updatedBudget.getName())
+                    .startDate(updatedBudget.getStartDate())
+                    .endDate(updatedBudget.getEndDate())
+                    .totalBudget(updatedBudget.getTotalBudget())
+                    .status(updatedBudget.getStatus().name())
+                    .createdAt(updatedBudget.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .build();
+
+        } catch (BadRequestException | NotAuthorizedException | NotFoundException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error occurred while updating budget", e);
+            throw new InternalServerErrorException(
+                    "An error occurred while updating the budget: " + e.getMessage());
+        }
     }
 
     @Override
