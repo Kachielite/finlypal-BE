@@ -19,6 +19,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
@@ -46,7 +48,8 @@ public class BudgetItem {
   private BudgetItemStatus status;
 
   @ManyToOne
-  @JoinColumn(name = "budget_id")
+  @JoinColumn(name = "budget_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Budget budget;
 
   @Column(name = "created_at")

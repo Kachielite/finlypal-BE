@@ -10,13 +10,20 @@ import com.derrick.finlypal.exception.NotFoundException;
 import org.springframework.data.domain.Page;
 
 public interface BudgetService {
-    BudgetResponseDTO createBudget(BudgetRequestDTO budgetRequestDTO) throws BadRequestException, InternalServerErrorException;
+  BudgetResponseDTO createBudget(BudgetRequestDTO budgetRequestDTO)
+      throws BadRequestException, InternalServerErrorException;
 
-    BudgetResponseDTO updateBudget(Long budgetId, BudgetRequestDTO budgetRequestDTO) throws BadRequestException, NotFoundException, NotAuthorizedException, InternalServerErrorException;
+  BudgetResponseDTO updateBudget(Long budgetId, BudgetRequestDTO budgetRequestDTO)
+      throws BadRequestException,
+          NotFoundException,
+          NotAuthorizedException,
+          InternalServerErrorException;
 
-    BudgetResponseDTO getBudgetById(Long budgetId) throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
+  BudgetResponseDTO getBudgetById(Long budgetId)
+      throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 
-    Page<BudgetResponseDTO> getAllBudgets(int page, int pageSize) throws InternalServerErrorException;
+  Page<BudgetResponseDTO> getAllBudgets(int page, int pageSize) throws InternalServerErrorException;
 
-    GeneralResponseDTO deleteBudget(Long budgetId) throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
+  GeneralResponseDTO deleteBudget(Long budgetId)
+      throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 }

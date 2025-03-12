@@ -19,3 +19,9 @@ databaseChangeLog:
       file: classpath:/db/changelog/changes/009-create-savings-items-table.sql
   - include:
       file: classpath:/db/changelog/changes/010-alter-expense_link_expense_to_savings_item.sql
+  - include:
+      file: classpath:/db/changelog/changes/011-alter-budget-item-add-cascade-to-budget.sql
+  - include:
+      file: classpath:/db/changelog/changes/012-alter-expense-add_cascade_to_budget_items.sql
+  - include:
+      file: classpath:/db/changelog/changes/013-alter-buget-table-change_datatype_of_startDate_endDate.sql

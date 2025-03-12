@@ -6,13 +6,13 @@ import org.springframework.data.domain.Page;
 
 public interface SavingsService {
 
-    SavingsResponseDTO createSavings(SavingsRequestDTO savingsRequestDTO);
+  SavingsResponseDTO createSavings(SavingsRequestDTO savingsRequestDTO);
 
-    SavingsResponseDTO updateSavings(Long savingsId, SavingsRequestDTO savingsRequestDTO);
+  SavingsResponseDTO updateSavings(Long savingsId, SavingsRequestDTO savingsRequestDTO);
 
-    SavingsResponseDTO getSavingsById(Long savingsId);
+  SavingsResponseDTO getSavingsById(Long savingsId);
 
-    Page<SavingsResponseDTO> getAllSavings(int page, int pageSize);
+  Page<SavingsResponseDTO> getAllSavings(int page, int pageSize);
 
-    void deleteSavings(Long savingsId);
+  void deleteSavings(Long savingsId);
 }

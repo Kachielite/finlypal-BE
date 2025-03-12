@@ -12,16 +12,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -32,38 +31,38 @@ import java.time.LocalDate;
 @Table(name = "budgets")
 public class Budget {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
 
-    @NotNull(message = "Name is required")
-    private String name;
+  @NotNull(message = "Name is required")
+  private String name;
 
-    @NotNull(message = "Start date is required")
-    @Column(name = "start_date")
-    private LocalDate startDate;
+  @NotNull(message = "Start date is required")
+  @Column(name = "start_date")
+  private LocalDate startDate;
 
-    @NotNull(message = "End date is required")
-    @Column(name = "end_date")
-    private LocalDate endDate;
+  @NotNull(message = "End date is required")
+  @Column(name = "end_date")
+  private LocalDate endDate;
 
-    @NotNull(message = "Total Budget is required")
-    @Column(name = "total_budget")
-    private BigDecimal totalBudget;
+  @NotNull(message = "Total Budget is required")
+  @Column(name = "total_budget")
+  private BigDecimal totalBudget;
 
-    @NotNull(message = "Status is required")
-    @Enumerated(EnumType.STRING)
-    private BudgetStatus status;
+  @NotNull(message = "Status is required")
+  @Enumerated(EnumType.STRING)
+  private BudgetStatus status;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
-    @CreatedDate
-    @Column(name = "created_at")
-    private Timestamp createdAt;
+  @CreatedDate
+  @Column(name = "created_at")
+  private Timestamp createdAt;
 
-    @CreatedDate
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
+  @CreatedDate
+  @Column(name = "updated_at")
+  private Timestamp updatedAt;
 }
