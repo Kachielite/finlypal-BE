@@ -2,6 +2,7 @@ package com.derrick.finlypal.service;
 
 import com.derrick.finlypal.dto.BudgetRequestDTO;
 import com.derrick.finlypal.dto.BudgetResponseDTO;
+import com.derrick.finlypal.dto.GeneralResponseDTO;
 import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotAuthorizedException;
@@ -17,5 +18,5 @@ public interface BudgetService {
 
     Page<BudgetResponseDTO> getAllBudgets(int page, int pageSize) throws InternalServerErrorException;
 
-    void deleteBudget(Long budgetId) throws NotFoundException, InternalServerErrorException;
+    GeneralResponseDTO deleteBudget(Long budgetId) throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 }
