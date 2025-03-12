@@ -13,7 +13,7 @@ public interface BudgetService {
 
     BudgetResponseDTO updateBudget(Long budgetId, BudgetRequestDTO budgetRequestDTO) throws BadRequestException, NotFoundException, NotAuthorizedException, InternalServerErrorException;
 
-    BudgetResponseDTO getBudgetById(Long budgetId) throws NotFoundException, InternalServerErrorException;
+    BudgetResponseDTO getBudgetById(Long budgetId) throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 
     Page<BudgetResponseDTO> getAllBudgets(int page, int pageSize) throws InternalServerErrorException;
 

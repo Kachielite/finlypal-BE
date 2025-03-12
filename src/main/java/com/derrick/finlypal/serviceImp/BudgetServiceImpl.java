@@ -1,14 +1,18 @@
 package com.derrick.finlypal.serviceImp;
 
+import com.derrick.finlypal.dto.BudgetItemResponseDTO;
 import com.derrick.finlypal.dto.BudgetRequestDTO;
 import com.derrick.finlypal.dto.BudgetResponseDTO;
 import com.derrick.finlypal.entity.Budget;
+import com.derrick.finlypal.entity.BudgetItem;
 import com.derrick.finlypal.entity.User;
+import com.derrick.finlypal.enums.BudgetItemStatus;
 import com.derrick.finlypal.enums.BudgetStatus;
 import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
+import com.derrick.finlypal.repository.BudgetItemRepository;
 import com.derrick.finlypal.repository.BudgetRepository;
 import com.derrick.finlypal.service.BudgetService;
 import com.derrick.finlypal.util.GetLoggedInUserUtil;
@@ -19,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,6 +32,7 @@ import java.util.Optional;
 @Slf4j
 public class BudgetServiceImpl implements BudgetService {
     private final BudgetRepository budgetRepository;
+    private final BudgetItemRepository budgetItemRepository;
 
 
     @Override
@@ -65,6 +71,7 @@ public class BudgetServiceImpl implements BudgetService {
                     .endDate(budget.getEndDate())
                     .totalBudget(budget.getTotalBudget())
                     .status(budget.getStatus().name())
+                    .budgetItems(null)
                     .createdAt(budget.getCreatedAt().toLocalDateTime().toLocalDate())
                     .build();
 
@@ -138,7 +145,50 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     public BudgetResponseDTO getBudgetById(Long budgetId) throws NotFoundException, InternalServerErrorException {
-        return null;
+        log.info("Received request to get budget for id {}", budgetId);
+
+        try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
+            Budget budget = budgetRepository.findById(budgetId)
+                    .orElseThrow(() -> new NotFoundException("Budget not found with id: " + budgetId));
+
+            if (!Objects.equals(budget.getUser().getId(), userId)) {
+                throw new BadRequestException("You are not authorized to update this budget");
+            }
+
+            List<BudgetItem> budgetItems = budgetItemRepository.findAllByBudgetId(budgetId);
+
+            List<BudgetItemResponseDTO> budgetItemResponseDTO = budgetItems.stream()
+                    .map(budgetItem -> BudgetItemResponseDTO.builder()
+                            .id(budgetItem.getId())
+                            .name(budgetItem.getName())
+                            .allocatedAmount(budgetItem.getAllocatedAmount())
+                            .status(BudgetItemStatus.valueOf(budgetItem.getStatus().name()))
+                            .createdAt(budgetItem.getCreatedAt().toLocalDateTime().toLocalDate())
+                            .build())
+                    .toList();
+
+            return BudgetResponseDTO.builder()
+                    .id(budget.getId())
+                    .name(budget.getName())
+                    .startDate(budget.getStartDate())
+                    .endDate(budget.getEndDate())
+                    .totalBudget(budget.getTotalBudget())
+                    .status(budget.getStatus().name())
+                    .budgetItems(budgetItemResponseDTO)
+                    .createdAt(budget.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .build();
+
+
+        } catch (NotFoundException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error occurred while getting budget for id {}", budgetId, e);
+            throw new InternalServerErrorException(
+                    "An error occurred while getting the budget: " + e.getMessage());
+        }
     }
 
     @Override
@@ -165,4 +215,5 @@ public class BudgetServiceImpl implements BudgetService {
         }
         return null;
     }
+
 }

@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -40,5 +40,5 @@ public class BudgetItemResponseDTO {
 
     @Schema(description = "createdAt of budget item", example = "2023-08-01")
     @JsonProperty("created_at")
-    private Timestamp createdAt;
+    private LocalDate createdAt;
 }
