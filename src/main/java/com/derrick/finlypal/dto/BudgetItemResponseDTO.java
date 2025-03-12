@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "BudgetItem", description = "Holds information about a budget item")
-public class BudgetItemResponse {
+public class BudgetItemResponseDTO {
     @Schema(description = "Id of budget item", example = "1")
     private Long id;
     @Schema(description = "Name of budget item", example = "Groceries")

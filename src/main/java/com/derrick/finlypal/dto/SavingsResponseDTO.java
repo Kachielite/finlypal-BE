@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "SavingsResponse", description = "Holds information about savings")
-public class SavingsResponse {
+public class SavingsResponseDTO {
 
     @Schema(description = "Id of savings", example = "1")
     private Long id;

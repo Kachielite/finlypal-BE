@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Schema(name = "SavingsRequest", description = "Holds information for creating a savings goal")
-public record SavingsRequest(
+public record SavingsRequestDTO(
         @Schema(description = "Name of savings goal", example = "Travel")
         @NotNull(message = "Goal name is required")
         String goalName,
