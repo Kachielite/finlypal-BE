@@ -19,6 +19,8 @@ import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -157,6 +159,7 @@ public class BudgetServiceImpl implements BudgetService {
                 throw new BadRequestException("You are not authorized to update this budget");
             }
 
+            log.info("Getting budget items with id {}", budgetId);
             List<BudgetItem> budgetItems = budgetItemRepository.findAllByBudgetId(budgetId);
 
             List<BudgetItemResponseDTO> budgetItemResponseDTO = budgetItems.stream()
@@ -193,7 +196,34 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     public Page<BudgetResponseDTO> getAllBudgets(int page, int pageSize) throws InternalServerErrorException {
-        return null;
+        log.info("Received request to get all budgets");
+        try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
+            Pageable pageable = PageRequest.of(page, pageSize);
+
+            log.info("Fetching budget list for user with id: {}", userId);
+            Page<Budget> budgetLists = budgetRepository.findAllByUserId(userId, pageable);
+
+            return budgetLists.map(budget ->
+                    BudgetResponseDTO.builder()
+                            .id(budget.getId())
+                            .name(budget.getName())
+                            .startDate(budget.getStartDate())
+                            .endDate(budget.getEndDate())
+                            .totalBudget(budget.getTotalBudget())
+                            .status(budget.getStatus().name())
+                            .budgetItems(null)
+                            .createdAt(budget.getCreatedAt().toLocalDateTime().toLocalDate()).build()
+
+            );
+
+        } catch (Exception e) {
+            log.info("Error occurred while getting all budgets", e);
+            throw new InternalServerErrorException(
+                    "An error occurred while getting all budgets: " + e.getMessage()
+            );
+        }
     }
 
     @Override
