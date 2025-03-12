@@ -12,16 +12,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -31,43 +30,43 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "expenses")
 public class Expense {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
 
-    @NotNull(message = "Description is required")
-    private String description;
+  @NotNull(message = "Description is required")
+  private String description;
 
-    @NotNull(message = "Amount is required")
-    private BigDecimal amount = BigDecimal.ZERO;
+  @NotNull(message = "Amount is required")
+  private BigDecimal amount = BigDecimal.ZERO;
 
-    @NotNull(message = "Date is required")
-    private LocalDate date;
+  @NotNull(message = "Date is required")
+  private LocalDate date;
 
-    @NotNull(message = "Expense type is required")
-    @Enumerated(EnumType.STRING)
-    private ExpenseType type;
+  @NotNull(message = "Expense type is required")
+  @Enumerated(EnumType.STRING)
+  private ExpenseType type;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+  @ManyToOne
+  @JoinColumn(name = "category_id")
+  private Category category;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "budget_items_id")
-    private BudgetItem budgetItem;
+  @ManyToOne
+  @JoinColumn(name = "budget_items_id")
+  private BudgetItem budgetItem;
 
-    @ManyToOne
-    @JoinColumn(name = "savings_items_id")
-    private SavingsItem savingsItem;
+  @ManyToOne
+  @JoinColumn(name = "savings_items_id")
+  private SavingsItem savingsItem;
 
-    @Column(name = "created_at")
-    private Timestamp createdAt;
+  @Column(name = "created_at")
+  private Timestamp createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
+  @UpdateTimestamp
+  @Column(name = "updated_at")
+  private Timestamp updatedAt;
 }

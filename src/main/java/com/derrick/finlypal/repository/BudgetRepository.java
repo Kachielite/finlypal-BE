@@ -7,6 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
-    Page<Budget> findAllByUserId(Long id, Pageable pageable);
-
+  Page<Budget> findAllByUserId(Long id, Pageable pageable);
 }

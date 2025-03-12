@@ -1,4 +1,3 @@
 package com.derrick.finlypal.service;
 
-public interface BudgetService {
-}
+public interface BudgetService {}
