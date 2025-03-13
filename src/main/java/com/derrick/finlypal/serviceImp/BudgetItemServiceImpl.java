@@ -219,6 +219,9 @@ public class BudgetItemServiceImpl implements BudgetItemService {
             BigDecimal allocatedAmount = budgetItemRequestDTO.allocatedAmount();
             BudgetItemStatus budgetItemStatus = getBudgetItemStatus(actualSpend, allocatedAmount);
 
+            log.info("Updating budget item with id {}", budgetItemId);
+            budgetItemRepository.save(budgetItem);
+
             return BudgetItemResponseDTO.builder()
                     .id(budgetItem.getId())
                     .name(budgetItem.getName())
