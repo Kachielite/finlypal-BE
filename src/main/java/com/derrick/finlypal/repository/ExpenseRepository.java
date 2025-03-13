@@ -23,6 +23,11 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
   List<Expense> findAllByUserId(Long userId);
 
+  List<Expense> findAllByUserIdAndBudgetItemId(Long userId, Long budgetItemId);
+
+  @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.budgetItem.id = :budgetItemId")
+  BigDecimal getTotalExpenseByBudgetItem(@Param("budgetItemId") Long budgetItemId);
+
   @Query(
       "SELECT e FROM Expense e WHERE e.user.id = :userId "
           + "AND e.date BETWEEN :startDate AND :endDate "

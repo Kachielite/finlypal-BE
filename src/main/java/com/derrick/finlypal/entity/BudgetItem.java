@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -52,6 +53,7 @@ public class BudgetItem {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Budget budget;
 
+  @CreationTimestamp
   @Column(name = "created_at")
   private Timestamp createdAt;
 

@@ -15,6 +15,7 @@ import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.repository.BudgetItemRepository;
 import com.derrick.finlypal.repository.BudgetRepository;
+import com.derrick.finlypal.repository.ExpenseRepository;
 import com.derrick.finlypal.service.BudgetService;
 import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import java.math.BigDecimal;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 public class BudgetServiceImpl implements BudgetService {
   private final BudgetRepository budgetRepository;
   private final BudgetItemRepository budgetItemRepository;
+  private final ExpenseRepository expenseRepository;
 
   @Override
   public BudgetResponseDTO createBudget(BudgetRequestDTO budgetRequestDTO)
@@ -139,7 +141,7 @@ public class BudgetServiceImpl implements BudgetService {
               budgetRequestDTO.startDate(),
               budgetRequestDTO.endDate(),
               Optional.of(budgetRequestDTO.totalBudget()),
-              Optional.empty()));
+              Optional.of(calculateTotalSpent(budgetId))));
 
       log.info("Saving updated budget");
       Budget updatedBudget = budgetRepository.save(budget);
@@ -184,6 +186,17 @@ public class BudgetServiceImpl implements BudgetService {
 
       log.info("Getting budget items with id {}", budgetId);
       List<BudgetItem> budgetItems = budgetItemRepository.findAllByBudgetId(budgetId);
+
+      // Update the status for budget
+      budget.setStatus(
+          getBudgetStatus(
+              budget.getStartDate(),
+              budget.getEndDate(),
+              Optional.of(budget.getTotalBudget()),
+              Optional.of(calculateTotalSpent(budget.getId()))));
+
+      // Save the status for budget
+      budgetRepository.save(budget);
 
       List<BudgetItemResponseDTO> budgetItemResponseDTO =
           budgetItems.stream()
@@ -230,6 +243,22 @@ public class BudgetServiceImpl implements BudgetService {
 
       log.info("Fetching budget list for user with id: {}", userId);
       Page<Budget> budgetLists = budgetRepository.findAllByUserId(userId, pageable);
+
+      // Update the status for each budget
+      budgetLists
+          .getContent()
+          .forEach(
+              budget -> {
+                budget.setStatus(
+                    getBudgetStatus(
+                        budget.getStartDate(),
+                        budget.getEndDate(),
+                        Optional.of(budget.getTotalBudget()),
+                        Optional.of(calculateTotalSpent(budget.getId()))));
+              });
+
+      // Save the status for each budget
+      budgetRepository.saveAll(budgetLists.getContent());
 
       return budgetLists.map(
           budget ->
@@ -283,6 +312,18 @@ public class BudgetServiceImpl implements BudgetService {
       throw new InternalServerErrorException(
           "An error occurred while deleting budget: " + e.getMessage());
     }
+  }
+
+  private BigDecimal calculateTotalSpent(Long budgetId) {
+    List<BudgetItem> budgetItems = budgetItemRepository.findAllByBudgetId(budgetId);
+
+    BigDecimal totalExpense = BigDecimal.ZERO;
+
+    for (BudgetItem item : budgetItems) {
+      totalExpense = totalExpense.add(expenseRepository.getTotalExpenseByBudgetItem(item.getId()));
+    }
+
+    return totalExpense;
   }
 
   private BudgetStatus getBudgetStatus(

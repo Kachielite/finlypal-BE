@@ -27,6 +27,9 @@ public class BudgetItemResponseDTO {
   @JsonProperty("allocated_amount")
   private BigDecimal allocatedAmount;
 
+  @Schema(description = "Actual spend of budget item", example = "50.00")
+  private BigDecimal actualSpend;
+
   @Schema(description = "Status of budget item", example = "ACTIVE")
   private BudgetItemStatus status;
 
