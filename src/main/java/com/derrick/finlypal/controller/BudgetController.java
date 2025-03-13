@@ -35,133 +35,133 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/budget")
 @Tag(
-    name = "Budget",
-    description =
-        "This API is used to manage budgets. A budget is a financial plan for a particular period of time. It can be used to track income, expenses and savings. Budgets can be created, updated and deleted. Budgets can also be retrieved by id or by a list of ids. Budgets can also be retrieved in a paginated fashion by providing a page number and a page size.")
+        name = "Budget",
+        description =
+                "This API is used to manage budgets. A budget is a financial plan for a particular period of time. It can be used to track income, expenses and savings. Budgets can be created, updated and deleted. Budgets can also be retrieved by id or by a list of ids. Budgets can also be retrieved in a paginated fashion by providing a page number and a page size.")
 public class BudgetController {
 
-  private final BudgetService budgetService;
+    private final BudgetService budgetService;
 
-  @PostMapping("/")
-  @Operation(
-      summary = "Create a new budget",
-      description =
-          "This operation creates a new budget for the logged-in user. It validates the provided budget details, ensures the user is authenticated, and saves the budget in the database. The response includes the budget's ID, name, start and end dates, total budget amount, status, and creation date.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "201", description = "Budget created"),
-    @ApiResponse(
-        responseCode = "400",
-        description = "Bad request",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<BudgetResponseDTO> createBudget(
-      @Valid @RequestBody BudgetRequestDTO budgetRequestDTO)
-      throws BadRequestException, InternalServerErrorException {
-    return new ResponseEntity<>(budgetService.createBudget(budgetRequestDTO), HttpStatus.CREATED);
-  }
+    @PostMapping("/")
+    @Operation(
+            summary = "Create a new budget",
+            description =
+                    "This operation creates a new budget for the logged-in user. It validates the provided budget details, ensures the user is authenticated, and saves the budget in the database. The response includes the budget's ID, name, start and end dates, total budget amount, status, and creation date.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Budget created"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
+    public ResponseEntity<BudgetResponseDTO> createBudget(
+            @Valid @RequestBody BudgetRequestDTO budgetRequestDTO)
+            throws BadRequestException, InternalServerErrorException {
+        return new ResponseEntity<>(budgetService.createBudget(budgetRequestDTO), HttpStatus.CREATED);
+    }
 
-  @PutMapping("/{budgetId}")
-  @Operation(
-      summary = "Update a budget",
-      description =
-          "This operation updates a budget for the logged-in user. It validates the provided budget details, ensures the user is authenticated, and ensures the budget exists and belongs to the logged-in user. The response includes the budget's ID, name, start and end dates, total budget amount, status, and creation date.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Budget updated"),
-    @ApiResponse(
-        responseCode = "400",
-        description = "Bad request",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "Budget not found",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "401",
-        description = "Not authorized",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<BudgetResponseDTO> updateBudget(
-      @PathVariable @NotNull(message = "budgetId cannot be null") Long budgetId,
-      @Valid @RequestBody BudgetRequestDTO budgetRequestDTO)
-      throws BadRequestException,
-          NotFoundException,
-          NotAuthorizedException,
-          InternalServerErrorException {
-    return new ResponseEntity<>(
-        budgetService.updateBudget(budgetId, budgetRequestDTO), HttpStatus.OK);
-  }
+    @PutMapping("/{budget_id}")
+    @Operation(
+            summary = "Update a budget",
+            description =
+                    "This operation updates a budget for the logged-in user. It validates the provided budget details, ensures the user is authenticated, and ensures the budget exists and belongs to the logged-in user. The response includes the budget's ID, name, start and end dates, total budget amount, status, and creation date.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Budget updated"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Budget not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Not authorized",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
+    public ResponseEntity<BudgetResponseDTO> updateBudget(
+            @PathVariable @NotNull(message = "budget_id cannot be null") Long budget_id,
+            @Valid @RequestBody BudgetRequestDTO budgetRequestDTO)
+            throws BadRequestException,
+            NotFoundException,
+            NotAuthorizedException,
+            InternalServerErrorException {
+        return new ResponseEntity<>(
+                budgetService.updateBudget(budget_id, budgetRequestDTO), HttpStatus.OK);
+    }
 
-  @GetMapping("/")
-  @Operation(
-      summary = "Get all budgets",
-      description =
-          "This operation returns a list of all budgets for the logged-in user. It validates the user is authenticated and returns a paginated list of budgets.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Budgets fetched successfully"),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<Page<BudgetResponseDTO>> getAllBudgets(
-      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize)
-      throws InternalServerErrorException {
-    return new ResponseEntity<>(budgetService.getAllBudgets(page, pageSize), HttpStatus.OK);
-  }
+    @GetMapping("/")
+    @Operation(
+            summary = "Get all budgets",
+            description =
+                    "This operation returns a list of all budgets for the logged-in user. It validates the user is authenticated and returns a paginated list of budgets.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Budgets fetched successfully"),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
+    public ResponseEntity<Page<BudgetResponseDTO>> getAllBudgets(
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize)
+            throws InternalServerErrorException {
+        return new ResponseEntity<>(budgetService.getAllBudgets(page, pageSize), HttpStatus.OK);
+    }
 
-  @GetMapping("/{budgetId}")
-  @Operation(
-      summary = "Get a budget by ID",
-      description =
-          "This operation returns a budget for the logged-in user. It validates the user is authenticated and returns a paginated list of budgets.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Budget fetched successfully"),
-    @ApiResponse(
-        responseCode = "404",
-        description = "Budget not found",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<BudgetResponseDTO> getBudgetById(
-      @PathVariable @NotNull(message = "budgetId cannot be null") Long budgetId)
-      throws NotFoundException, InternalServerErrorException, NotAuthorizedException {
-    return new ResponseEntity<>(budgetService.getBudgetById(budgetId), HttpStatus.OK);
-  }
+    @GetMapping("/{budget_id}")
+    @Operation(
+            summary = "Get a budget by ID",
+            description =
+                    "This operation returns a budget for the logged-in user. It validates the user is authenticated and returns a paginated list of budgets.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Budget fetched successfully"),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Budget not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
+    public ResponseEntity<BudgetResponseDTO> getBudgetById(
+            @PathVariable @NotNull(message = "budget_id cannot be null") Long budget_id)
+            throws NotFoundException, InternalServerErrorException, NotAuthorizedException {
+        return new ResponseEntity<>(budgetService.getBudgetById(budget_id), HttpStatus.OK);
+    }
 
-  @DeleteMapping("/{budgetId}")
-  @Operation(
-      summary = "Delete a budget",
-      description =
-          "This operation deletes a budget for the logged-in user. It validates the user is authenticated and ensures the budget exists and belongs to the logged-in user.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Budget deleted"),
-    @ApiResponse(
-        responseCode = "404",
-        description = "Budget not found",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "401",
-        description = "Not authorized",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
-  })
-  public ResponseEntity<GeneralResponseDTO> deleteBudget(
-      @PathVariable @NotNull(message = "budgetId cannot be null") Long budgetId)
-      throws NotFoundException, NotAuthorizedException, InternalServerErrorException {
-    return new ResponseEntity<>(budgetService.deleteBudget(budgetId), HttpStatus.OK);
-  }
+    @DeleteMapping("/{budget_id}")
+    @Operation(
+            summary = "Delete a budget",
+            description =
+                    "This operation deletes a budget for the logged-in user. It validates the user is authenticated and ensures the budget exists and belongs to the logged-in user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Budget deleted"),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Budget not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Not authorized",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
+    public ResponseEntity<GeneralResponseDTO> deleteBudget(
+            @PathVariable @NotNull(message = "budget_id cannot be null") Long budget_id)
+            throws NotFoundException, NotAuthorizedException, InternalServerErrorException {
+        return new ResponseEntity<>(budgetService.deleteBudget(budget_id), HttpStatus.OK);
+    }
 }
