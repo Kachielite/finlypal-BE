@@ -49,8 +49,8 @@ public class BudgetServiceImpl implements BudgetService {
         throw new BadRequestException("Start date must be before end date");
       }
 
-      if (budgetRequestDTO.startDate().isAfter(LocalDate.now())
-          && budgetRequestDTO.endDate().isAfter(LocalDate.now())) {
+      if (budgetRequestDTO.startDate().isBefore(LocalDate.now())
+          && budgetRequestDTO.endDate().isBefore(LocalDate.now())) {
         throw new BadRequestException("Start date and end date cannot be in the past");
       }
 
@@ -80,6 +80,7 @@ public class BudgetServiceImpl implements BudgetService {
           .endDate(budget.getEndDate())
           .totalBudget(budget.getTotalBudget())
           .status(budget.getStatus().name())
+          .statusTooltip(getStatusTooltip(budget.getStatus()))
           .budgetItems(null)
           .createdAt(budget.getCreatedAt().toLocalDateTime().toLocalDate())
           .build();
@@ -290,17 +291,33 @@ public class BudgetServiceImpl implements BudgetService {
       Optional<BigDecimal> totalSpent) {
     LocalDate today = LocalDate.now();
 
-    if (startDate.isBefore(today) && endDate.isBefore(today)) {
+    // If the budget starts in the future → PLANNED
+    if (startDate.isAfter(today)) {
       return BudgetStatus.PLANNED;
-    } else if (startDate.isAfter(today) && endDate.isBefore(today)) {
-      return BudgetStatus.IN_PROGRESS;
-    } else if (totalSpent.isPresent()
-        && totalBudget.isPresent()
-        && totalSpent.get().compareTo(totalBudget.get()) > 0) {
-      return BudgetStatus.EXCEEDED;
-    } else if (startDate.isAfter(today) && endDate.isAfter(today)) {
-      return BudgetStatus.EXCEEDED;
     }
-    return null;
+
+    // If the budget period has ended
+    if (endDate.isBefore(today)) {
+      if (totalSpent.isPresent()
+          && totalBudget.isPresent()
+          && totalSpent.get().compareTo(totalBudget.get()) > 0) {
+        return BudgetStatus.EXCEEDED; // Budget is over the limit
+      }
+      return BudgetStatus.EXPIRED; // Budget ended but within limits
+    }
+
+    // Otherwise, it's in progress
+    return BudgetStatus.IN_PROGRESS;
+  }
+
+  private String getStatusTooltip(BudgetStatus status) {
+    return switch (status) {
+      case PLANNED -> "This budget is set for a future period and hasn't started yet.";
+      case IN_PROGRESS -> "This budget is currently active. You can track spending in real-time.";
+      case EXCEEDED -> "This budget has ended, and spending went over the allocated amount.";
+      case EXPIRED ->
+          "This budget has ended, but spending remained within the allocated amount. Mark it as completed if you're done with it.";
+      case COMPLETED -> "You have manually marked this budget as completed.";
+    };
   }
 }

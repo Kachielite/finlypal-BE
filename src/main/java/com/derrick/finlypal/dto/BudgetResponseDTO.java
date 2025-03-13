@@ -42,6 +42,9 @@ public class BudgetResponseDTO {
   @Schema(description = "Budget status", example = "ACTIVE")
   private String status;
 
+  @Schema(description = "Budget status tooltip", example = "Active")
+  private String statusTooltip;
+
   @Schema(description = "createdAt of budget", example = "2023-08-01")
   @JsonProperty("created_at")
   private LocalDate createdAt;

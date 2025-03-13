@@ -4,5 +4,6 @@ public enum BudgetStatus {
   PLANNED,
   IN_PROGRESS,
   COMPLETED,
-  EXCEEDED
+  EXCEEDED,
+  EXPIRED
 }
