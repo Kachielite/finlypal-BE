@@ -2,12 +2,14 @@ package com.derrick.finlypal.serviceImp;
 
 import com.derrick.finlypal.dto.SavingsRequestDTO;
 import com.derrick.finlypal.dto.SavingsResponseDTO;
+import com.derrick.finlypal.entity.Expense;
 import com.derrick.finlypal.entity.Savings;
 import com.derrick.finlypal.enums.SavingsStatus;
 import com.derrick.finlypal.exception.BadRequestException;
 import com.derrick.finlypal.exception.InternalServerErrorException;
 import com.derrick.finlypal.exception.NotAuthorizedException;
 import com.derrick.finlypal.exception.NotFoundException;
+import com.derrick.finlypal.repository.ExpenseRepository;
 import com.derrick.finlypal.repository.SavingsRepository;
 import com.derrick.finlypal.service.SavingsService;
 import com.derrick.finlypal.util.GetLoggedInUserUtil;
@@ -18,12 +20,15 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SavingsServiceImpl implements SavingsService {
     private final SavingsRepository savingsRepository;
+    private final ExpenseRepository expenseRepository;
 
     @Override
     public SavingsResponseDTO createSavings(SavingsRequestDTO savingsRequestDTO) throws BadRequestException, InternalServerErrorException {
@@ -68,14 +73,63 @@ public class SavingsServiceImpl implements SavingsService {
             log.error(e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("Error creating savings: {}", e.getMessage());
-            throw new InternalServerErrorException("Error creating savings : " + e.getMessage());
+            log.error("Error creating savings goal: {}", e.getMessage());
+            throw new InternalServerErrorException("Error creating savings goal: " + e.getMessage());
         }
     }
 
     @Override
     public SavingsResponseDTO updateSavings(Long savingsId, SavingsRequestDTO savingsRequestDTO) throws BadRequestException, NotFoundException, NotAuthorizedException, InternalServerErrorException {
-        return null;
+        log.info("Received request to update savings: {}", savingsRequestDTO);
+        try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
+            Savings savings =
+                    savingsRepository
+                            .findById(savingsId)
+                            .orElseThrow(() -> new NotFoundException("Savings goal not found with id: " + savingsId));
+
+            if (!Objects.equals(savings.getUser().getId(), userId)) {
+                throw new NotAuthorizedException("You are not authorized to update this savings goal");
+            }
+
+            if (savingsRequestDTO.startDate().isAfter(savingsRequestDTO.endDate())) {
+                throw new BadRequestException("Start date must be before end date");
+            }
+
+            if (savingsRequestDTO.startDate().isBefore(LocalDate.now())
+                    && savingsRequestDTO.endDate().isBefore(LocalDate.now())) {
+                throw new BadRequestException("Start date and end date cannot be in the past");
+            }
+
+            log.info("Updating savings for user with id: {}", userId);
+            BigDecimal savedAmount = calculateSavedAmount(savingsId, userId);
+
+            savings.setGoalName(savingsRequestDTO.goalName());
+            savings.setTargetAmount(savingsRequestDTO.targetAmount());
+            savings.setStartDate(savingsRequestDTO.startDate());
+            savings.setEndDate(savingsRequestDTO.endDate());
+            savings.setSavedAmount(savedAmount);
+            savings.setStatus(getSavingsStatus(savingsRequestDTO.endDate(), savingsRequestDTO.targetAmount(), savedAmount));
+
+            return SavingsResponseDTO.builder()
+                    .id(savings.getId())
+                    .goalName(savings.getGoalName())
+                    .targetAmount(savings.getTargetAmount())
+                    .savedAmount(savings.getSavedAmount())
+                    .startDate(savings.getStartDate().toString())
+                    .endDate(savings.getEndDate().toString())
+                    .status(savings.getStatus())
+                    .createdAt(savings.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .build();
+
+        } catch (BadRequestException | NotFoundException | NotAuthorizedException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating savings goal: {}", e.getMessage());
+            throw new InternalServerErrorException("Error updating savings goals: " + e.getMessage());
+        }
     }
 
     @Override
@@ -106,4 +160,17 @@ public class SavingsServiceImpl implements SavingsService {
 
         return SavingsStatus.ON_TRACK;
     }
+
+    private BigDecimal calculateSavedAmount(Long savingsId, Long userId) {
+        List<Expense> expenses = expenseRepository.findAllByUserIdAndSavingsId(savingsId, userId);
+
+        BigDecimal savedAmount = BigDecimal.ZERO;
+
+        for (Expense expense : expenses) {
+            savedAmount = expenseRepository.getTotalExpenseBySavingsId(expense.getSavings().getId());
+        }
+
+        return savedAmount;
+    }
+
 }
