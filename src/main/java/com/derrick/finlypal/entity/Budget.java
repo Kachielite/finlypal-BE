@@ -1,6 +1,7 @@
 package com.derrick.finlypal.entity;
 
-import com.derrick.finlypal.enums.ExpenseType;
+import com.derrick.finlypal.enums.BudgetStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,16 +11,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
@@ -28,42 +32,41 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "expenses")
-public class Expense {
+@Table(name = "budgets")
+public class Budget {
+
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  @NotNull(message = "Description is required")
-  private String description;
+  @NotNull(message = "Name is required")
+  private String name;
 
-  @NotNull(message = "Amount is required")
-  private BigDecimal amount = BigDecimal.ZERO;
+  @NotNull(message = "Start date is required")
+  @Column(name = "start_date")
+  private LocalDate startDate;
 
-  @NotNull(message = "Date is required")
-  private LocalDate date;
+  @NotNull(message = "End date is required")
+  @Column(name = "end_date")
+  private LocalDate endDate;
 
-  @NotNull(message = "Expense type is required")
+  @NotNull(message = "Total Budget is required")
+  @Column(name = "total_budget")
+  private BigDecimal totalBudget;
+
+  @NotNull(message = "Status is required")
   @Enumerated(EnumType.STRING)
-  private ExpenseType type;
-
-  @ManyToOne
-  @JoinColumn(name = "category_id")
-  private Category category;
+  private BudgetStatus status;
 
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User user;
 
-  @ManyToOne
-  @JoinColumn(name = "budget_items_id", nullable = true)
-  private BudgetItem budgetItem;
+  @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<BudgetItem> budgetItems;
 
-  @ManyToOne
-  @JoinColumn(name = "savings_id", nullable = true)
-  private Savings savings;
-
-  @Column(name = "created_at")
+  @CreationTimestamp
+  @Column(name = "created_at", updatable = false)
   private Timestamp createdAt;
 
   @UpdateTimestamp

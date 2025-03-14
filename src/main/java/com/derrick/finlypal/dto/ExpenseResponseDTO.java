@@ -1,6 +1,8 @@
 package com.derrick.finlypal.dto;
 
 import com.derrick.finlypal.enums.ExpenseType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
@@ -15,6 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "ExpenseResponse", description = "Response object for an expense")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExpenseResponseDTO {
 
   @Schema(description = "Id of expense", example = "1")
@@ -39,4 +43,12 @@ public class ExpenseResponseDTO {
   @Schema(description = "category name of expense", example = "Utility")
   @JsonProperty("category_name")
   private String categoryName;
+
+  @Schema(description = "Id of savings item this expense belongs to", example = "1")
+  @JsonProperty("savings_item_id")
+  private Long savingsItemId;
+
+  @Schema(description = "Id of budget item this expense belongs to", example = "1")
+  @JsonProperty("budget_item_id")
+  private Long budgetItemId;
 }
