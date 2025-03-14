@@ -6,6 +6,7 @@ import com.derrick.finlypal.dto.GeneralResponseDTO;
 import com.derrick.finlypal.entity.BudgetItem;
 import com.derrick.finlypal.entity.Category;
 import com.derrick.finlypal.entity.Expense;
+import com.derrick.finlypal.entity.Savings;
 import com.derrick.finlypal.entity.User;
 import com.derrick.finlypal.enums.ExpenseType;
 import com.derrick.finlypal.exception.BadRequestException;
@@ -15,6 +16,7 @@ import com.derrick.finlypal.exception.NotFoundException;
 import com.derrick.finlypal.repository.BudgetItemRepository;
 import com.derrick.finlypal.repository.CategoryRepository;
 import com.derrick.finlypal.repository.ExpenseRepository;
+import com.derrick.finlypal.repository.SavingsRepository;
 import com.derrick.finlypal.service.ExpenseService;
 import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import java.time.LocalDate;
@@ -35,6 +37,7 @@ public class ExpenseServiceImpl implements ExpenseService {
   private final ExpenseRepository expenseRepository;
   private final CategoryRepository categoryRepository;
   private final BudgetItemRepository budgetItemRepository;
+  private final SavingsRepository savingsRepository;
 
   /**
    * This method is used to find an expense by its id. It returns an {@link ExpenseResponseDTO} if
@@ -79,6 +82,8 @@ public class ExpenseServiceImpl implements ExpenseService {
           .description(expense.getDescription())
           .categoryId(expense.getCategory().getId())
           .categoryName(expense.getCategory().getDisplayName())
+          .savingsItemId(expense.getSavings() != null ? expense.getSavings().getId() : null)
+          .budgetItemId(expense.getBudgetItem() != null ? expense.getBudgetItem().getId() : null)
           .build();
 
     } catch (NotFoundException e) {
@@ -175,6 +180,9 @@ public class ExpenseServiceImpl implements ExpenseService {
   public ExpenseResponseDTO addExpense(ExpenseRequestDTO expenseRequestDTO)
       throws InternalServerErrorException, BadRequestException {
     log.info("Received new expense request for {}", expenseRequestDTO);
+
+    BudgetItem budgetItem = null;
+    Savings savings = null;
     try {
       User user = Objects.requireNonNull(GetLoggedInUserUtil.getUser());
       Category category =
@@ -185,14 +193,26 @@ public class ExpenseServiceImpl implements ExpenseService {
                       new BadRequestException(
                           "Could not find category with id: " + expenseRequestDTO.categoryID()));
 
-      BudgetItem budgetItem =
-          budgetItemRepository
-              .findById(expenseRequestDTO.budgetItemID())
-              .orElseThrow(
-                  () ->
-                      new BadRequestException(
-                          "Could not find budget item with id: "
-                              + expenseRequestDTO.budgetItemID()));
+      if (expenseRequestDTO.budgetItemID() != null) {
+        budgetItem =
+            budgetItemRepository
+                .findById(expenseRequestDTO.budgetItemID())
+                .orElseThrow(
+                    () ->
+                        new BadRequestException(
+                            "Could not find budget item with id: "
+                                + expenseRequestDTO.budgetItemID()));
+      }
+
+      if (expenseRequestDTO.savingsID() != null) {
+        savings =
+            savingsRepository
+                .findById(expenseRequestDTO.savingsID())
+                .orElseThrow(
+                    () ->
+                        new BadRequestException(
+                            "Could not find savings with id: " + expenseRequestDTO.savingsID()));
+      }
 
       log.info("Found category with id {}", category.getId());
       Expense expense =
@@ -202,6 +222,7 @@ public class ExpenseServiceImpl implements ExpenseService {
               .amount(expenseRequestDTO.amount())
               .user(user)
               .budgetItem(budgetItem)
+              .savings(savings)
               .date(expenseRequestDTO.date())
               .category(category)
               .build();
@@ -216,6 +237,8 @@ public class ExpenseServiceImpl implements ExpenseService {
           .categoryName(expense.getCategory().getDisplayName())
           .description(expense.getDescription())
           .amount(expense.getAmount())
+          .savingsItemId(expense.getSavings() != null ? expense.getSavings().getId() : null)
+          .budgetItemId(expense.getBudgetItem() != null ? expense.getBudgetItem().getId() : null)
           .date(expense.getDate())
           .type(expense.getType())
           .build();
@@ -252,6 +275,9 @@ public class ExpenseServiceImpl implements ExpenseService {
       throws InternalServerErrorException, NotFoundException, NotAuthorizedException {
     log.info("Received update expense request for {}", expenseRequestDTO);
 
+    BudgetItem budgetItem = null;
+    Savings savings = null;
+
     try {
       User user = Objects.requireNonNull(GetLoggedInUserUtil.getUser());
       Expense expense =
@@ -264,6 +290,34 @@ public class ExpenseServiceImpl implements ExpenseService {
         throw new NotAuthorizedException("You do not have permission to update this expense");
       }
 
+      if (expenseRequestDTO.budgetItemID() != null) {
+        budgetItem =
+            budgetItemRepository
+                .findById(expenseRequestDTO.budgetItemID())
+                .orElseThrow(
+                    () ->
+                        new BadRequestException(
+                            "Could not find budget item with id: "
+                                + expenseRequestDTO.budgetItemID()));
+      }
+
+      if (expenseRequestDTO.savingsID() != null) {
+        savings =
+            savingsRepository
+                .findById(expenseRequestDTO.savingsID())
+                .orElseThrow(
+                    () ->
+                        new BadRequestException(
+                            "Could not find savings with id: " + expenseRequestDTO.savingsID()));
+      }
+
+      if (expenseRequestDTO.budgetItemID() != null) {
+        expense.setBudgetItem(budgetItem);
+      }
+
+      if (expenseRequestDTO.savingsID() != null) {
+        expense.setSavings(savings);
+      }
       if (expenseRequestDTO.description() != null) {
         expense.setDescription(expenseRequestDTO.description());
       }
@@ -302,6 +356,8 @@ public class ExpenseServiceImpl implements ExpenseService {
           .categoryName(expense.getCategory().getDisplayName())
           .description(expense.getDescription())
           .amount(expense.getAmount())
+          .savingsItemId(expense.getSavings() != null ? expense.getSavings().getId() : null)
+          .budgetItemId(expense.getBudgetItem() != null ? expense.getBudgetItem().getId() : null)
           .date(expense.getDate())
           .type(expense.getType())
           .build();
@@ -383,6 +439,9 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .description(expense.getDescription())
                 .categoryId(expense.getCategory().getId())
                 .categoryName(expense.getCategory().getDisplayName())
+                .savingsItemId(expense.getSavings() != null ? expense.getSavings().getId() : null)
+                .budgetItemId(
+                    expense.getBudgetItem() != null ? expense.getBudgetItem().getId() : null)
                 .build());
   }
 }

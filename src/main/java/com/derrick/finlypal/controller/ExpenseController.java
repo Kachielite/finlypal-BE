@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +61,7 @@ public class ExpenseController {
         content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
   })
   public ResponseEntity<ExpenseResponseDTO> getExpenseById(
-      @NotEmpty(message = "Expense id cannot be empty") @PathVariable Long expense_id)
+      @NotNull(message = "Expense id cannot be empty") @PathVariable Long expense_id)
       throws NotFoundException, InternalServerErrorException, NotAuthorizedException {
     return new ResponseEntity<>(expenseService.findById(expense_id), HttpStatus.OK);
   }

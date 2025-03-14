@@ -25,9 +25,9 @@ public record ExpenseRequestDTO(
         ExpenseType type,
     @Schema(description = "Id of category", example = "1") @JsonProperty("category_id")
         Long categoryID,
-    @Schema(description = "Id of savings item this expense belongs to", example = "1")
-        @JsonProperty("savings_item_id")
-        Long savingsItemID,
+    @Schema(description = "Id of savings id item this expense belongs to", example = "1")
+        @JsonProperty("savings_id")
+        Long savingsID,
     @Schema(description = "Id of budget item this expense belongs to", example = "1")
         @JsonProperty("budget_item_id")
         Long budgetItemID) {}
