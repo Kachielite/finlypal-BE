@@ -1,5 +1,6 @@
 package com.derrick.finlypal.serviceImp;
 
+import com.derrick.finlypal.dto.ExpenseResponseDTO;
 import com.derrick.finlypal.dto.SavingsRequestDTO;
 import com.derrick.finlypal.dto.SavingsResponseDTO;
 import com.derrick.finlypal.entity.Expense;
@@ -102,6 +103,10 @@ public class SavingsServiceImpl implements SavingsService {
                 throw new BadRequestException("Start date and end date cannot be in the past");
             }
 
+            if (savings.getStatus().equals(SavingsStatus.ACHIEVED)) {
+                throw new BadRequestException("You cannot update an Achieved Savings Goals");
+            }
+
             log.info("Updating savings for user with id: {}", userId);
             BigDecimal savedAmount = calculateSavedAmount(savingsId, userId);
 
@@ -134,7 +139,60 @@ public class SavingsServiceImpl implements SavingsService {
 
     @Override
     public SavingsResponseDTO getSavingsById(Long savingsId) throws NotFoundException, NotAuthorizedException, InternalServerErrorException {
-        return null;
+        log.info("Received request to get savings by id: {}", savingsId);
+        try {
+            Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
+            Savings savings =
+                    savingsRepository
+                            .findById(savingsId)
+                            .orElseThrow(() -> new NotFoundException("Savings goal not found with id: " + savingsId));
+
+            if (!Objects.equals(savings.getUser().getId(), userId)) {
+                throw new NotAuthorizedException("You are not authorized to read this savings goal");
+            }
+
+            BigDecimal savedAmount = calculateSavedAmount(savingsId, userId);
+            SavingsStatus status = getSavingsStatus(savings.getEndDate(), savings.getTargetAmount(), savedAmount);
+
+            // Update savings status, saved amount
+            savings.setStatus(status);
+            savings.setSavedAmount(savedAmount);
+            savingsRepository.save(savings);
+
+            List<Expense> expenses = expenseRepository.findAllByUserIdAndSavingsId(userId, savingsId);
+
+            List<ExpenseResponseDTO> expenseResponseDTOs = expenses.stream()
+                    .map(expense -> ExpenseResponseDTO.builder()
+                            .id(expense.getId())
+                            .amount(expense.getAmount())
+                            .description(expense.getDescription())
+                            .date(expense.getDate())
+                            .type(expense.getType())
+                            .categoryName(expense.getCategory().getName())
+                            .categoryId(expense.getCategory().getId())
+                            .build())
+                    .toList();
+
+            return SavingsResponseDTO.builder()
+                    .id(savings.getId())
+                    .goalName(savings.getGoalName())
+                    .targetAmount(savings.getTargetAmount())
+                    .savedAmount(savedAmount)
+                    .startDate(savings.getStartDate().toString())
+                    .endDate(savings.getEndDate().toString())
+                    .status(savings.getStatus())
+                    .expenses(expenseResponseDTOs)
+                    .createdAt(savings.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .build();
+
+        } catch (NotFoundException | NotAuthorizedException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting savings goal: {}", e.getMessage());
+            throw new InternalServerErrorException("Error getting savings goal: " + e.getMessage());
+        }
     }
 
     @Override

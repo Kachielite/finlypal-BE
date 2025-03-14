@@ -1,6 +1,5 @@
 package com.derrick.finlypal.dto;
 
-import com.derrick.finlypal.entity.Expense;
 import com.derrick.finlypal.enums.SavingsStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -51,7 +50,7 @@ public class SavingsResponseDTO {
     private SavingsStatus status;
 
     @Schema(description = "List of expenses associated with savings", example = "[]")
-    private List<Expense> expenses;
+    private List<ExpenseResponseDTO> expenses;
 
     @Schema(description = "savings creation date", example = "2023-08-01")
     @JsonProperty("created_at")
