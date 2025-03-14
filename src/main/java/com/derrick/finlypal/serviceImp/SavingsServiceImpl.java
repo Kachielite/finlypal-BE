@@ -18,7 +18,6 @@ import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -59,7 +57,7 @@ public class SavingsServiceImpl implements SavingsService {
                     Savings.builder()
                             .goalName(savingsRequestDTO.goalName())
                             .targetAmount(savingsRequestDTO.targetAmount())
-                            .savedAmount(BigDecimal.ZERO)
+                            .savedAmount(savingsRequestDTO.savedAmount() == null ? BigDecimal.ZERO : savingsRequestDTO.savedAmount())
                             .startDate(savingsRequestDTO.startDate())
                             .endDate(savingsRequestDTO.endDate())
                             .user(GetLoggedInUserUtil.getUser())
@@ -71,8 +69,8 @@ public class SavingsServiceImpl implements SavingsService {
                                             BigDecimal.ZERO))
                             .build();
 
-            // Debugging step
-            System.out.println("Created At: " + savings.getCreatedAt()); // Should NOT be null
+            // save the savings
+            savingsRepository.save(savings);
 
             return SavingsResponseDTO.builder()
                     .id(savings.getId())
@@ -247,23 +245,18 @@ public class SavingsServiceImpl implements SavingsService {
                                 savingsRepository.save(savings);
                             });
 
-            List<SavingsResponseDTO> savingsResponseDTOs =
-                    savingsPage.getContent().stream()
-                            .map(
-                                    savings ->
-                                            SavingsResponseDTO.builder()
-                                                    .id(savings.getId())
-                                                    .goalName(savings.getGoalName())
-                                                    .targetAmount(savings.getTargetAmount())
-                                                    .savedAmount(savings.getSavedAmount())
-                                                    .startDate(savings.getStartDate().toString())
-                                                    .endDate(savings.getEndDate().toString())
-                                                    .status(savings.getStatus())
-                                                    .createdAt(savings.getCreatedAt().toLocalDateTime().toLocalDate())
-                                                    .build())
-                            .collect(Collectors.toList());
-
-            return new PageImpl<>(savingsResponseDTOs, pageable, savingsPage.getTotalElements());
+            return savingsPage.map(
+                    savings ->
+                            SavingsResponseDTO.builder()
+                                    .id(savings.getId())
+                                    .goalName(savings.getGoalName())
+                                    .targetAmount(savings.getTargetAmount())
+                                    .savedAmount(savings.getSavedAmount())
+                                    .startDate(savings.getStartDate().toString())
+                                    .endDate(savings.getEndDate().toString())
+                                    .status(savings.getStatus())
+                                    .createdAt(savings.getCreatedAt().toLocalDateTime().toLocalDate())
+                                    .build());
 
         } catch (Exception e) {
             log.error("Error getting savings goals: {}", e.getMessage());
