@@ -10,21 +10,21 @@ import org.springframework.data.domain.Page;
 
 public interface SavingsService {
 
-    SavingsResponseDTO createSavings(SavingsRequestDTO savingsRequestDTO)
-            throws BadRequestException, InternalServerErrorException;
+  SavingsResponseDTO createSavings(SavingsRequestDTO savingsRequestDTO)
+      throws BadRequestException, InternalServerErrorException;
 
-    SavingsResponseDTO updateSavings(Long savingsId, SavingsRequestDTO savingsRequestDTO)
-            throws BadRequestException,
-            NotFoundException,
-            NotAuthorizedException,
-            InternalServerErrorException;
+  SavingsResponseDTO updateSavings(Long savingsId, SavingsRequestDTO savingsRequestDTO)
+      throws BadRequestException,
+          NotFoundException,
+          NotAuthorizedException,
+          InternalServerErrorException;
 
-    SavingsResponseDTO getSavingsById(Long savingsId)
-            throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
+  SavingsResponseDTO getSavingsById(Long savingsId)
+      throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 
-    Page<SavingsResponseDTO> getAllSavings(int page, int pageSize)
-            throws InternalServerErrorException;
+  Page<SavingsResponseDTO> getAllSavings(int page, int pageSize)
+      throws InternalServerErrorException;
 
-    void deleteSavings(Long savingsId)
-            throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
+  void deleteSavings(Long savingsId)
+      throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 }
