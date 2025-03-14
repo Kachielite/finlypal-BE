@@ -60,8 +60,8 @@ public class Expense {
   private BudgetItem budgetItem;
 
   @ManyToOne
-  @JoinColumn(name = "savings_items_id")
-  private SavingsItem savingsItem;
+  @JoinColumn(name = "savings_id")
+  private Savings savings;
 
   @Column(name = "created_at")
   private Timestamp createdAt;
