@@ -17,9 +17,6 @@ public record SavingsRequestDTO(
         @NotNull(message = "Target amount is required")
         @JsonProperty("target_amount")
         BigDecimal targetAmount,
-        @Schema(description = "Saved amount of savings goal", example = "500.00")
-        @JsonProperty("saved_amount")
-        BigDecimal savedAmount,
         @Schema(description = "Start date of savings goal", example = "2023-08-01")
         @NotNull(message = "Start date is required")
         @JsonProperty("start_date")

@@ -57,7 +57,7 @@ public class SavingsServiceImpl implements SavingsService {
                     Savings.builder()
                             .goalName(savingsRequestDTO.goalName())
                             .targetAmount(savingsRequestDTO.targetAmount())
-                            .savedAmount(savingsRequestDTO.savedAmount() == null ? BigDecimal.ZERO : savingsRequestDTO.savedAmount())
+                            .savedAmount(BigDecimal.ZERO)
                             .startDate(savingsRequestDTO.startDate())
                             .endDate(savingsRequestDTO.endDate())
                             .user(GetLoggedInUserUtil.getUser())
@@ -136,6 +136,10 @@ public class SavingsServiceImpl implements SavingsService {
             savings.setStatus(
                     getSavingsStatus(
                             savingsRequestDTO.endDate(), savingsRequestDTO.targetAmount(), savedAmount));
+
+            // save the savings
+            log.info("Saving savings for user with id: {}", userId);
+            savingsRepository.save(savings);
 
             return SavingsResponseDTO.builder()
                     .id(savings.getId())
