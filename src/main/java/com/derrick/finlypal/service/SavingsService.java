@@ -1,5 +1,6 @@
 package com.derrick.finlypal.service;
 
+import com.derrick.finlypal.dto.GeneralResponseDTO;
 import com.derrick.finlypal.dto.SavingsRequestDTO;
 import com.derrick.finlypal.dto.SavingsResponseDTO;
 import com.derrick.finlypal.exception.BadRequestException;
@@ -25,6 +26,6 @@ public interface SavingsService {
   Page<SavingsResponseDTO> getAllSavings(int page, int pageSize)
       throws InternalServerErrorException;
 
-  void deleteSavings(Long savingsId)
+  GeneralResponseDTO deleteSavings(Long savingsId)
       throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 }
