@@ -14,10 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +21,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,41 +36,44 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "budgets")
 public class Budget {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-  @NotNull(message = "Name is required")
-  private String name;
+    @NotNull(message = "Name is required")
+    private String name;
 
-  @NotNull(message = "Start date is required")
-  @Column(name = "start_date")
-  private LocalDate startDate;
+    @NotNull(message = "Icon is required")
+    private String icon;
 
-  @NotNull(message = "End date is required")
-  @Column(name = "end_date")
-  private LocalDate endDate;
+    @NotNull(message = "Start date is required")
+    @Column(name = "start_date")
+    private LocalDate startDate;
 
-  @NotNull(message = "Total Budget is required")
-  @Column(name = "total_budget")
-  private BigDecimal totalBudget;
+    @NotNull(message = "End date is required")
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
-  @NotNull(message = "Status is required")
-  @Enumerated(EnumType.STRING)
-  private BudgetStatus status;
+    @NotNull(message = "Total Budget is required")
+    @Column(name = "total_budget")
+    private BigDecimal totalBudget;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id")
-  private User user;
+    @NotNull(message = "Status is required")
+    @Enumerated(EnumType.STRING)
+    private BudgetStatus status;
 
-  @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<BudgetItem> budgetItems;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-  @CreationTimestamp
-  @Column(name = "created_at", updatable = false)
-  private Timestamp createdAt;
+    @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BudgetItem> budgetItems;
 
-  @UpdateTimestamp
-  @Column(name = "updated_at")
-  private Timestamp updatedAt;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Timestamp createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
 }
