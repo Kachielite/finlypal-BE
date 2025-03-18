@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -42,6 +42,9 @@ public class BudgetItemResponseDTO {
     @Schema(description = "Status of budget item", example = "ACTIVE")
     private BudgetItemStatus status;
 
+    @Schema(description = "Status tooltip of budget item", example = "ON_TRACK")
+    private String statusTooltip;
+
     @Schema(description = "Id of budget", example = "1")
     @JsonProperty("budget_id")
     private Long budgetId;
@@ -51,5 +54,5 @@ public class BudgetItemResponseDTO {
 
     @Schema(description = "createdAt of budget item", example = "2023-08-01")
     @JsonProperty("created_at")
-    private LocalDate createdAt;
+    private Timestamp createdAt;
 }

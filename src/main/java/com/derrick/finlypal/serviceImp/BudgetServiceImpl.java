@@ -96,10 +96,11 @@ public class BudgetServiceImpl implements BudgetService {
                     .startDate(budget.getStartDate())
                     .endDate(budget.getEndDate())
                     .totalBudget(budget.getTotalBudget())
+                    .actualSpend(BigDecimal.ZERO)
                     .status(budget.getStatus().name())
                     .statusTooltip(getStatusTooltip(budget.getStatus()))
                     .budgetItems(null)
-                    .createdAt(budget.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .createdAt(budget.getCreatedAt())
                     .build();
 
         } catch (BadRequestException e) {
@@ -197,7 +198,7 @@ public class BudgetServiceImpl implements BudgetService {
                     .actualSpend(actualSpend)
                     .status(updatedBudget.getStatus().name())
                     .statusTooltip(getStatusTooltip(budget.getStatus()))
-                    .createdAt(updatedBudget.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .createdAt(updatedBudget.getCreatedAt())
                     .build();
 
         } catch (BadRequestException | NotAuthorizedException | NotFoundException e) {
@@ -265,7 +266,7 @@ public class BudgetServiceImpl implements BudgetService {
                                                     .actualSpend(
                                                             budgetItemServiceImpl.getActualSpend(userId, budgetItem.getId()))
                                                     .status(BudgetItemStatus.valueOf(budgetItem.getStatus().name()))
-                                                    .createdAt(budgetItem.getCreatedAt().toLocalDateTime().toLocalDate())
+                                                    .createdAt(budgetItem.getCreatedAt())
                                                     .build())
                             .toList();
 
@@ -281,8 +282,9 @@ public class BudgetServiceImpl implements BudgetService {
                     .totalBudget(budget.getTotalBudget())
                     .actualSpend(actualSpend)
                     .status(budget.getStatus().name())
+                    .statusTooltip(getStatusTooltip(budget.getStatus()))
                     .budgetItems(budgetItemResponseDTO)
-                    .createdAt(budget.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .createdAt(budget.getCreatedAt())
                     .build();
 
         } catch (NotFoundException | NotAuthorizedException e) {
@@ -320,6 +322,7 @@ public class BudgetServiceImpl implements BudgetService {
             log.info("Fetching budget list for user with id: {}", userId);
             Page<Budget> budgetLists = budgetRepository.findAllByUserId(userId, pageable);
 
+
             // Update the status for each budget
             budgetLists
                     .getContent()
@@ -345,8 +348,9 @@ public class BudgetServiceImpl implements BudgetService {
                                     .startDate(budget.getStartDate())
                                     .endDate(budget.getEndDate())
                                     .totalBudget(budget.getTotalBudget())
+                                    .actualSpend(budgetRepository.findTotalExpensesByBudgetId(budget.getId()))
                                     .status(budget.getStatus().name())
-                                    .createdAt(budget.getCreatedAt().toLocalDateTime().toLocalDate())
+                                    .createdAt(budget.getCreatedAt())
                                     .build());
 
         } catch (Exception e) {

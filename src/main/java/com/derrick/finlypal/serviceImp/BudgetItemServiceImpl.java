@@ -158,7 +158,7 @@ public class BudgetItemServiceImpl implements BudgetItemService {
                                             getBudgetItemStatus(
                                                     getActualSpend(userId, budgetItem.getId()),
                                                     budgetItem.getAllocatedAmount()))
-                                    .createdAt(budgetItem.getCreatedAt().toLocalDateTime().toLocalDate())
+                                    .createdAt(budgetItem.getCreatedAt())
                                     .actualSpend(getActualSpend(userId, budgetItem.getId()))
                                     .build());
 
@@ -217,9 +217,10 @@ public class BudgetItemServiceImpl implements BudgetItemService {
                     .icon(budgetItem.getIcon())
                     .allocatedAmount(budgetItem.getAllocatedAmount())
                     .status(budgetItemStatus)
-                    .createdAt(budgetItem.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .createdAt(budgetItem.getCreatedAt())
                     .actualSpend(getActualSpend(userId, budgetItem.getId()))
                     .expenses(expenses)
+                    .budgetId(budgetItem.getBudget().getId())
                     .build();
 
         } catch (NotFoundException | NotAuthorizedException e) {
@@ -262,6 +263,7 @@ public class BudgetItemServiceImpl implements BudgetItemService {
             NotFoundException,
             InternalServerErrorException,
             NotAuthorizedException {
+        log.info("Updating budget item with id {} and request {}", budgetItemId, budgetItemRequestDTO);
         try {
             Long userId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
             BudgetItem budgetItem =
@@ -283,7 +285,7 @@ public class BudgetItemServiceImpl implements BudgetItemService {
                                                     "Budget not found with id: " + budgetItemRequestDTO.budgetId()));
 
             budgetItem.setName(budgetItemRequestDTO.name());
-            budgetItem.setIcon(budgetItem.getIcon());
+            budgetItem.setIcon(budgetItemRequestDTO.icon());
             budgetItem.setAllocatedAmount(budgetItemRequestDTO.allocatedAmount());
             budgetItem.setBudget(budget);
 
@@ -297,10 +299,12 @@ public class BudgetItemServiceImpl implements BudgetItemService {
             return BudgetItemResponseDTO.builder()
                     .id(budgetItem.getId())
                     .name(budgetItem.getName())
+                    .icon(budgetItem.getIcon())
                     .allocatedAmount(budgetItem.getAllocatedAmount())
                     .status(budgetItemStatus)
-                    .createdAt(budgetItem.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .createdAt(budgetItem.getCreatedAt())
                     .actualSpend(getActualSpend(userId, budgetItem.getId()))
+                    .budgetId(budgetItem.getBudget().getId())
                     .build();
 
         } catch (BadRequestException | NotFoundException | NotAuthorizedException e) {
