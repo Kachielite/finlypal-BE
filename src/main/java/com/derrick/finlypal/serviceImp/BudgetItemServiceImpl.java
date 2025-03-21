@@ -84,7 +84,18 @@ public class BudgetItemServiceImpl implements BudgetItemService {
                 throw new BadRequestException("No budget items were provided");
             }
 
-            log.info("Creating budget items for budget with id {}", budgetId);
+            // check that the sum of budget items is not greater than the budget amount
+            //1. first find existing budget items belonging to the given budget and the new budget items
+            //2. check if the sum of the existing budget items and the new budget items is greater than the budget amount
+            //3. if it is, throw an exception
+            List<BudgetItem> existingBudgetItems = budgetItemRepository.findAllByBudgetId(budgetId);
+            BigDecimal totalBudgetItemsAmount = existingBudgetItems.stream().map(BudgetItem::getAllocatedAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalNewBudgetItemsAmount = budgetItems.stream().map(BudgetItemCreateRequestDTO::allocatedAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            if (totalBudgetItemsAmount.add(totalNewBudgetItemsAmount).compareTo(budget.getTotalBudget()) > 0) {
+                throw new BadRequestException("The sum of the existing budget items and the new budget items is greater than the budget amount");
+            }
+
 
             budgetItems.forEach(
                     budgetItemRequestDTO -> {
