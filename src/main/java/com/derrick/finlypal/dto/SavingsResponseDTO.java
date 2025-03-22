@@ -53,6 +53,7 @@ public class SavingsResponseDTO {
     private SavingsStatus status;
 
     @Schema(description = "Status tooltip of savings", example = "On track to reach savings goal")
+    @JsonProperty("status_tooltip")
     private String statusTooltip;
 
     @Schema(description = "List of expenses associated with savings", example = "[]")
