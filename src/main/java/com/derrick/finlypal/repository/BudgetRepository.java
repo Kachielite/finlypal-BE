@@ -5,11 +5,24 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.math.BigDecimal;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
-  Page<Budget> findAllByUserId(Long id, Pageable pageable);
+    Page<Budget> findAllByUserId(Long id, Pageable pageable);
 
-  @Transactional
-  void deleteById(Long id);
+    @Query("""
+                SELECT COALESCE(SUM(e.amount), 0) 
+                FROM BudgetItem bi 
+                LEFT JOIN bi.expenses e 
+                ON e.type = 'EXPENSE'
+                WHERE bi.budget.id = :budgetId
+            """)
+    BigDecimal findTotalExpensesByBudgetId(@Param("budgetId") Long budgetId);
+
+    @Transactional
+    void deleteById(Long id);
 }

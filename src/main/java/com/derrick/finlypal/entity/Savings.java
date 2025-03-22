@@ -14,10 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +21,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,45 +36,48 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "savings")
 public class Savings {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-  @NotNull(message = "Goal name is required")
-  @Column(name = "goal_name")
-  private String goalName;
+    @NotNull(message = "Goal name is required")
+    @Column(name = "goal_name")
+    private String goalName;
 
-  @NotNull(message = "Target amount is required")
-  @Column(name = "target_amount")
-  private BigDecimal targetAmount;
+    @NotNull(message = "Icon is required")
+    private String icon;
 
-  @NotNull(message = "Saved amount is required")
-  @Column(name = "saved_amount")
-  private BigDecimal savedAmount = BigDecimal.ZERO;
+    @NotNull(message = "Target amount is required")
+    @Column(name = "target_amount")
+    private BigDecimal targetAmount;
 
-  @NotNull(message = "Start date is required")
-  @Column(name = "start_date")
-  private LocalDate startDate;
+    @NotNull(message = "Saved amount is required")
+    @Column(name = "saved_amount")
+    private BigDecimal savedAmount = BigDecimal.ZERO;
 
-  @NotNull(message = "End date is required")
-  @Column(name = "end_date")
-  private LocalDate endDate;
+    @NotNull(message = "Start date is required")
+    @Column(name = "start_date")
+    private LocalDate startDate;
 
-  @Enumerated(EnumType.STRING)
-  private SavingsStatus status;
+    @NotNull(message = "End date is required")
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id")
-  private User user;
+    @Enumerated(EnumType.STRING)
+    private SavingsStatus status;
 
-  @OneToMany(mappedBy = "savings", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Expense> expenses;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-  @CreationTimestamp
-  @Column(name = "created_at", updatable = false)
-  private Timestamp createdAt;
+    @OneToMany(mappedBy = "savings", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Expense> expenses;
 
-  @UpdateTimestamp
-  @Column(name = "updated_at")
-  private Timestamp updatedAt;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Timestamp createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
 }
