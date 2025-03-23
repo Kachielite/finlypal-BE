@@ -24,6 +24,9 @@ public interface BudgetService {
 
   Page<BudgetResponseDTO> getAllBudgets(int page, int pageSize) throws InternalServerErrorException;
 
+  GeneralResponseDTO markBudgetAsCompleted(Long budgetId)
+      throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
+
   GeneralResponseDTO deleteBudget(Long budgetId)
       throws NotFoundException, NotAuthorizedException, InternalServerErrorException;
 }

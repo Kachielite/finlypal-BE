@@ -5,5 +5,7 @@ public enum BudgetStatus {
   IN_PROGRESS,
   COMPLETED,
   EXCEEDED,
-  EXPIRED
+  EXPIRED,
+  AT_RISK,
+  UNDERUTILIZED
 }
