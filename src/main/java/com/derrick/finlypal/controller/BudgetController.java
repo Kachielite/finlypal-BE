@@ -139,6 +139,32 @@ public class BudgetController {
     return new ResponseEntity<>(budgetService.getBudgetById(budget_id), HttpStatus.OK);
   }
 
+  @PostMapping("/complete/{budget_id}")
+  @Operation(
+      summary = "Mark a budget as completed",
+      description =
+          "This operation marks a budget as completed for the logged-in user. It validates the user is authenticated and ensures the budget exists and belongs to the logged-in user.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Budget marked as completed"),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Budget not found",
+        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Not authorized",
+        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+    @ApiResponse(
+        responseCode = "500",
+        description = "Internal server error",
+        content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
+  })
+  public ResponseEntity<GeneralResponseDTO> completeBudget(
+      @PathVariable @NotNull(message = "budget_id cannot be null") Long budget_id)
+      throws NotFoundException, NotAuthorizedException, InternalServerErrorException {
+    return new ResponseEntity<>(budgetService.markBudgetAsCompleted(budget_id), HttpStatus.OK);
+  }
+
   @DeleteMapping("/{budget_id}")
   @Operation(
       summary = "Delete a budget",
