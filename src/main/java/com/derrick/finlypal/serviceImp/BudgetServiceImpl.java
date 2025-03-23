@@ -350,6 +350,7 @@ public class BudgetServiceImpl implements BudgetService {
                                     .totalBudget(budget.getTotalBudget())
                                     .actualSpend(budgetRepository.findTotalExpensesByBudgetId(budget.getId()))
                                     .status(budget.getStatus().name())
+                                    .statusTooltip(getStatusTooltip(budget.getStatus()))
                                     .createdAt(budget.getCreatedAt())
                                     .build());
 
@@ -456,6 +457,7 @@ public class BudgetServiceImpl implements BudgetService {
             LocalDate endDate,
             Optional<BigDecimal> totalBudget,
             Optional<BigDecimal> totalSpent) {
+
         LocalDate today = LocalDate.now();
 
         // If the budget starts in the future → PLANNED
@@ -463,18 +465,35 @@ public class BudgetServiceImpl implements BudgetService {
             return BudgetStatus.PLANNED;
         }
 
+        // If the budget is still active (today is before or equal to endDate)
+        if (!endDate.isBefore(today) && totalSpent.isPresent() && totalBudget.isPresent()) {
+            BigDecimal spent = totalSpent.get();
+            BigDecimal budget = totalBudget.get();
+            BigDecimal threshold = budget.multiply(BigDecimal.valueOf(0.9)); // 90% of budget
+
+            if (spent.compareTo(budget) >= 0) {
+                return BudgetStatus.EXCEEDED; // Budget is still active but fully used up
+            }
+            if (spent.compareTo(threshold) >= 0) {
+                return BudgetStatus.AT_RISK; // Budget is close to being exceeded
+            }
+        }
+
         // If the budget period has ended
-        if (endDate.isBefore(today)) {
-            if (totalSpent.isPresent()
-                    && totalBudget.isPresent()
-                    && totalSpent.get().compareTo(totalBudget.get()) > 0) {
-                return BudgetStatus.EXCEEDED; // Budget is over the limit
+        if (endDate.isBefore(today) && totalSpent.isPresent() && totalBudget.isPresent()) {
+            BigDecimal spent = totalSpent.get();
+            BigDecimal budget = totalBudget.get();
+
+            if (spent.compareTo(budget) > 0) {
+                return BudgetStatus.EXCEEDED; // Budget was exceeded before it ended
+            }
+            if (spent.compareTo(budget.multiply(BigDecimal.valueOf(0.5))) < 0) {
+                return BudgetStatus.UNDERUTILIZED; // Less than 50% of budget used
             }
             return BudgetStatus.EXPIRED; // Budget ended but within limits
         }
 
-        // Otherwise, it's in progress
-        return BudgetStatus.IN_PROGRESS;
+        return BudgetStatus.IN_PROGRESS; // Budget is ongoing and within limits
     }
 
     /**
@@ -485,12 +504,14 @@ public class BudgetServiceImpl implements BudgetService {
      */
     private String getStatusTooltip(BudgetStatus status) {
         return switch (status) {
-            case PLANNED -> "This budget is set for a future period and hasn't started yet.";
-            case IN_PROGRESS -> "This budget is currently active. You can track spending in real-time.";
-            case EXCEEDED -> "This budget has ended, and spending went over the allocated amount.";
+            case PLANNED -> "📅 This budget is set for a future period and hasn't started yet.";
+            case IN_PROGRESS -> "⏳ This budget is currently active. You can track spending in real-time.";
+            case EXCEEDED -> "🚨 This budget is still active, but the allocated amount has already been used up!";
             case EXPIRED ->
-                    "This budget has ended, but spending remained within the allocated amount. Mark it as completed if you're done with it.";
-            case COMPLETED -> "You have manually marked this budget as completed.";
+                    "✅ This budget has ended, but spending remained within the allocated amount. Mark it as completed if you're done with it.";
+            case COMPLETED -> "🎉 You have manually marked this budget as completed.";
+            case AT_RISK -> "⚠️ Spending is close to exceeding the budget. Monitor carefully!";
+            case UNDERUTILIZED -> "📉 Less than 50% of the budget was used. Consider adjusting future allocations.";
         };
     }
 }
