@@ -23,8 +23,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -79,6 +81,7 @@ public class SavingsServiceImpl implements SavingsService {
                             // saving
                             .status(
                                     getSavingsStatus(
+                                            savingsRequestDTO.startDate(),
                                             savingsRequestDTO.endDate(),
                                             savingsRequestDTO.targetAmount(),
                                             BigDecimal.ZERO))
@@ -112,8 +115,9 @@ public class SavingsServiceImpl implements SavingsService {
      * Updates an existing savings goal with the given {@link SavingsRequestDTO}. It takes in the id
      * of the savings goal to be updated and the {@link SavingsRequestDTO} containing the new values.
      * It returns a {@link SavingsResponseDTO} indicating the status of the request. If the request is
-     * successful, it returns a status of {@link HttpStatus#OK} and a message indicating that the
-     * savings goal was successfully updated. If the savings goal with the given id is not found, it
+     * successful, it returns a {@link SavingsResponseDTO} with a status of {@link HttpStatus#OK}
+     * and a message indicating the successful update of the savings goal. If the savings goal with
+     * the provided id is not found, it throws a {@link NotFoundException}. If the user is not
      * throws a {@link NotFoundException}. If the user is not authorized to update the savings goal,
      * it throws a {@link NotAuthorizedException}. If any unexpected error occurs while trying to
      * update the savings goal, it throws an {@link InternalServerErrorException}.
@@ -171,7 +175,7 @@ public class SavingsServiceImpl implements SavingsService {
             savings.setSavedAmount(savedAmount);
             savings.setStatus(
                     getSavingsStatus(
-                            savingsRequestDTO.endDate(), savingsRequestDTO.targetAmount(), savedAmount));
+                            savingsRequestDTO.startDate(), savingsRequestDTO.endDate(), savingsRequestDTO.targetAmount(), savedAmount));
 
             // save the savings
             log.info("Saving savings for user with id: {}", userId);
@@ -232,7 +236,7 @@ public class SavingsServiceImpl implements SavingsService {
 
             BigDecimal savedAmount = calculateSavedAmount(savingsId);
             SavingsStatus status =
-                    getSavingsStatus(savings.getEndDate(), savings.getTargetAmount(), savedAmount);
+                    getSavingsStatus(savings.getStartDate(), savings.getEndDate(), savings.getTargetAmount(), savedAmount);
 
             // Update savings status, saved amount
             savings.setStatus(status);
@@ -251,7 +255,7 @@ public class SavingsServiceImpl implements SavingsService {
                                                     .description(expense.getDescription())
                                                     .date(expense.getDate())
                                                     .type(expense.getType())
-                                                    .categoryName(expense.getCategory().getName())
+                                                    .categoryName(expense.getCategory().getDisplayName())
                                                     .categoryId(expense.getCategory().getId())
                                                     .build())
                             .toList();
@@ -311,7 +315,7 @@ public class SavingsServiceImpl implements SavingsService {
                             savings -> {
                                 BigDecimal savedAmount = calculateSavedAmount(savings.getId());
                                 SavingsStatus status =
-                                        getSavingsStatus(savings.getEndDate(), savings.getTargetAmount(), savedAmount);
+                                        getSavingsStatus(savings.getStartDate(), savings.getEndDate(), savings.getTargetAmount(), savedAmount);
                                 savings.setStatus(status);
                                 savings.setSavedAmount(savedAmount);
                                 savingsRepository.save(savings);
@@ -394,18 +398,29 @@ public class SavingsServiceImpl implements SavingsService {
      * @return the status of the savings goal
      */
     private SavingsStatus getSavingsStatus(
-            LocalDate endDate, BigDecimal targetAmount, BigDecimal savedAmount) {
+            LocalDate startDate, LocalDate endDate, BigDecimal targetAmount, BigDecimal savedAmount) {
         LocalDate today = LocalDate.now();
 
+        if (today.isBefore(startDate)) {
+            return SavingsStatus.NOT_STARTED; // Before savings start
+        }
+
         if (savedAmount.compareTo(targetAmount) >= 0) {
-            return SavingsStatus.ACHIEVED;
+            return SavingsStatus.ACHIEVED; // Goal reached
         }
 
         if (endDate.isBefore(today)) {
-            return SavingsStatus.FAILED;
+            return SavingsStatus.FAILED; // Deadline passed
         }
 
-        return SavingsStatus.ON_TRACK;
+        long daysRemaining = ChronoUnit.DAYS.between(today, endDate);
+        BigDecimal progress = savedAmount.divide(targetAmount, 2, RoundingMode.HALF_UP); // Normalized progress
+
+        if (daysRemaining < 7 && progress.compareTo(new BigDecimal("0.75")) < 0) {
+            return SavingsStatus.AT_RISK; // Less than a week left & less than 75% saved
+        }
+
+        return SavingsStatus.ON_TRACK; // Default case
     }
 
     /**
@@ -416,9 +431,11 @@ public class SavingsServiceImpl implements SavingsService {
      */
     private String getSavingsStatusTooltip(SavingsStatus status) {
         return switch (status) {
-            case ACHIEVED -> "You have successfully reached your savings goal!";
-            case FAILED -> "The savings goal was not achieved before the end date.";
-            case ON_TRACK -> "You are currently on track to reach your savings goal.";
+            case NOT_STARTED -> "⏳ Your savings goal has not started yet.";
+            case ACHIEVED -> "🎉 You have successfully reached your savings goal!";
+            case FAILED -> "❌ The savings goal was not achieved before the end date.";
+            case ON_TRACK -> "✅ You are currently on track to reach your savings goal.";
+            case AT_RISK -> "⚠️ Your savings goal is at risk! Consider saving more before the deadline.";
         };
     }
 

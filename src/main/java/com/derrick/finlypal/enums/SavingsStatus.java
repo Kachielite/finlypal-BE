@@ -1,7 +1,9 @@
 package com.derrick.finlypal.enums;
 
 public enum SavingsStatus {
-  ON_TRACK,
-  ACHIEVED,
-  FAILED,
+    NOT_STARTED,
+    ON_TRACK,
+    AT_RISK,
+    ACHIEVED,
+    FAILED,
 }
