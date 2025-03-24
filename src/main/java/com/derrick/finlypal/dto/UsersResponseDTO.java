@@ -13,12 +13,15 @@ import lombok.Data;
 @Schema(name = "UsersResponse", description = "Holds user details")
 public class UsersResponseDTO {
 
-  @Schema(name = "id", description = "User id", example = "1")
-  private Long id;
+    @Schema(name = "id", description = "User id", example = "1")
+    private Long id;
 
-  @Schema(name = "name", description = "User name", example = "John Doe")
-  private String name;
+    @Schema(name = "name", description = "User name", example = "John Doe")
+    private String name;
 
-  @Schema(name = "email", description = "User email", example = "XK0eI@example.com")
-  private String email;
+    @Schema(name = "email", description = "User email", example = "XK0eI@example.com")
+    private String email;
+
+    @Schema(name = "currency", description = "User currency", example = "{\"code\":\"USD\", \"name\":\"US Dollar\", \"symbol\":\"$\"}")
+    private CurrencyResponseDTO currency;
 }
