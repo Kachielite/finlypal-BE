@@ -74,6 +74,7 @@ public class UsersServiceImpl implements UsersService {
             Currency currency = user.getCurrency();
             CurrencyResponseDTO currencyResponseDTO = CurrencyResponseDTO
                     .builder()
+                    .id(currency.getId())
                     .symbol(currency.getSymbol())
                     .name(currency.getName())
                     .code(currency.getCode())
