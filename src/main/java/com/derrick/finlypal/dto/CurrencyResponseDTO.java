@@ -14,6 +14,8 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(name = "CurrencyResponse", description = "Holds currency information")
 public class CurrencyResponseDTO {
+    @Schema(description = "Currency id", example = "1")
+    private Long id;
     @Schema(description = "Currency code", example = "USD")
     private String code;
     @Schema(description = "Currency name", example = "United States Dollar")

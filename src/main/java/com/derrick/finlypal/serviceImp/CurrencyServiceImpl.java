@@ -31,6 +31,7 @@ public class CurrencyServiceImpl implements CurrencyService {
             return currencies.stream().map(
                     currency -> CurrencyResponseDTO
                             .builder()
+                            .id(currency.getId())
                             .code(currency.getCode())
                             .name(currency.getName())
                             .symbol(currency.getSymbol())
