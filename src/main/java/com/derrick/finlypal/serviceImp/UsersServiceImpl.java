@@ -1,7 +1,6 @@
 package com.derrick.finlypal.serviceImp;
 
 import com.derrick.finlypal.dto.CurrencyResponseDTO;
-import com.derrick.finlypal.dto.GeneralResponseDTO;
 import com.derrick.finlypal.dto.UsersResponseDTO;
 import com.derrick.finlypal.dto.UsersUpdateRequestDTO;
 import com.derrick.finlypal.entity.Currency;
@@ -17,7 +16,6 @@ import com.derrick.finlypal.util.GetLoggedInUserUtil;
 import com.derrick.finlypal.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -108,20 +106,25 @@ public class UsersServiceImpl implements UsersService {
      *
      * @param userId           the id of the user to be updated
      * @param updateRequestDTO the {@link UsersUpdateRequestDTO} containing the new user details
-     * @return a {@link GeneralResponseDTO} indicating the status of the request
+     * @return a {@link UsersResponseDTO} indicating the status of the request
      * @throws NotFoundException            if the user is not found
      * @throws InternalServerErrorException if any unexpected error occurs
      * @throws NotAuthorizedException       if the user is not authorized
      * @throws BadRequestException          if the request is invalid
      */
     @Override
-    public GeneralResponseDTO updateUserDetails(Long userId, UsersUpdateRequestDTO updateRequestDTO)
+    public UsersResponseDTO updateUserDetails(Long userId, UsersUpdateRequestDTO updateRequestDTO)
             throws NotFoundException,
             InternalServerErrorException,
             NotAuthorizedException,
             BadRequestException {
         try {
             log.info("Received request to update user details for {}", userId);
+            Long loggedInUserId = Objects.requireNonNull(GetLoggedInUserUtil.getUser()).getId();
+
+            if (!loggedInUserId.equals(userId)) {
+                throw new NotAuthorizedException("User is not authorized to update user details");
+            }
             User user = validateUserAccess(userId);
 
             if (updateRequestDTO.name() != null) {
@@ -146,9 +149,20 @@ public class UsersServiceImpl implements UsersService {
             log.info("Updating details for user with id {}", userId);
             userRepository.save(user);
 
-            return GeneralResponseDTO.builder()
-                    .status(HttpStatus.OK)
-                    .message("User details updated successfully")
+            Currency currency = user.getCurrency();
+            CurrencyResponseDTO currencyResponseDTO = CurrencyResponseDTO
+                    .builder()
+                    .id(currency.getId())
+                    .symbol(currency.getSymbol())
+                    .name(currency.getName())
+                    .code(currency.getCode())
+                    .build();
+
+            return UsersResponseDTO.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .currency(currencyResponseDTO)
                     .build();
 
         } catch (NotFoundException e) {
