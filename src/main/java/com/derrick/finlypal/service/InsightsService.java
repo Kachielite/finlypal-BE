@@ -40,17 +40,17 @@ public interface InsightsService {
 
     InsightsTotalSavingsAndBudgetAmountDTO getTotalSavingsAndBudgetAmount(
             LocalDate startDate, LocalDate endDate
-    ) throws InternalServerErrorException, BadRequestException;
+    ) throws InternalServerErrorException;
 
     List<InsightsTotalBudgetByStatusSummaryDTO> getTotalBudgetByStatusSummary(
             LocalDate startDate, LocalDate endDate
-    ) throws InternalServerErrorException, BadRequestException;
+    ) throws InternalServerErrorException;
 
     List<InsightsTotalSavingsByStatusSummaryDTO> getTotalSavingsByStatusSummary(
             LocalDate startDate, LocalDate endDate
-    ) throws InternalServerErrorException, BadRequestException;
+    ) throws InternalServerErrorException;
 
     List<InsightsBudgetOrSavingsMonthlyTrendDTO> getBudgetOrSavingsMonthlyTrend(
             LocalDate startDate, LocalDate endDate, InsightMonthlyTrendType type
-    ) throws InternalServerErrorException, BadRequestException;
+    ) throws InternalServerErrorException;
 }
