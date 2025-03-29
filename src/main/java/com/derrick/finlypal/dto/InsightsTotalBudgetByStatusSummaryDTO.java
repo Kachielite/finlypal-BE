@@ -16,5 +16,5 @@ public class InsightsTotalBudgetByStatusSummaryDTO {
     @Schema(description = "Status of budget", example = "ACTIVE")
     private BudgetStatus status;
     @Schema(description = "Count of budget", example = "1")
-    private Integer count;
+    private Long count;
 }

@@ -363,7 +363,7 @@ public class InsightsServiceImpl implements InsightsService {
                     .map(result -> InsightsTotalBudgetByStatusSummaryDTO
                             .builder()
                             .status((BudgetStatus) result[0])
-                            .count((Integer) result[1])
+                            .count((Long) result[1])
                             .build())
                     .collect(Collectors.toList());
 
@@ -395,7 +395,7 @@ public class InsightsServiceImpl implements InsightsService {
                     .map(result -> InsightsTotalSavingsByStatusSummaryDTO
                             .builder()
                             .status((SavingsStatus) result[0])
-                            .count((Integer) result[1])
+                            .count((Long) result[1])
                             .build())
                     .collect(Collectors.toList());
 
@@ -430,7 +430,7 @@ public class InsightsServiceImpl implements InsightsService {
             return trend.stream()
                     .map(result -> InsightsBudgetOrSavingsMonthlyTrendDTO
                             .builder()
-                            .month((String) result[0])
+                            .month(((String) result[0]).trim())
                             .amount((BigDecimal) result[1])
                             .build())
                     .collect(Collectors.toList());

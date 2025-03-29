@@ -48,8 +48,10 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
     @Query("SELECT FUNCTION('TO_CHAR', e.date, 'Month') AS monthName, SUM(e.amount) " +
             "FROM Expense e " +
-            "WHERE e.date >= :startDate AND e.date <= :endDate " +
-            "AND e.type = 'EXPENSE' AND e.user.id = :userId " +
+            "WHERE e.date BETWEEN :startDate AND :endDate " +
+            "AND e.type = 'EXPENSE' " +
+            "AND e.budgetItem.budget.id IS NOT NULL " + // Ensures expense is linked to a budget
+            "AND e.user.id = :userId " +
             "GROUP BY FUNCTION('TO_CHAR', e.date, 'Month') " +
             "ORDER BY MIN(e.date)")
     List<Object[]> getMonthlyExpenseTrends(@Param("startDate") LocalDate startDate,

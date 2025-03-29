@@ -16,5 +16,5 @@ public class InsightsTotalSavingsByStatusSummaryDTO {
     @Schema(description = "Status of savings", example = "ACTIVE")
     private SavingsStatus status;
     @Schema(description = "Count of savings by status", example = "2")
-    private Integer count;
+    private Long count;
 }
