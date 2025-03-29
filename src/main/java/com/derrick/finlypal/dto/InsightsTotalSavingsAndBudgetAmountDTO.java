@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @Schema(name = "InsightsTotalSavingsAndBudgetAmount", description = "Insights total savings and budget amount")
-public class InsightsTotalSavingsAndBudgetAmount {
+public class InsightsTotalSavingsAndBudgetAmountDTO {
     @Schema(description = "Total savings amount", example = "1000.00")
     private BigDecimal totalSavings;
     @Schema(description = "Total budget amount", example = "1000.00")
